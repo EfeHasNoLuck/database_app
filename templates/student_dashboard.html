@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - APS</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb', // Academic Blue
+                        secondary: '#475569',
+                        background: '#f8f9fa',
+                        surface: '#ffffff',
+                    },
+                    fontFamily: {
+                        sans: ['Be Vietnam Pro', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-background text-gray-800 font-sans min-h-screen flex">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-surface border-r border-gray-200 flex flex-col fixed h-full z-10">
+        <!-- Brand -->
+        <div class="h-16 flex items-center px-6 border-b border-gray-100">
+            <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white mr-3">
+                <span class="material-symbols-outlined text-lg">school</span>
+            </div>
+            <span class="font-bold text-xl tracking-tight text-gray-900">UnivAPS</span>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+            <a href="{{ url_for('student_dashboard') }}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium">
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+            <a href="{{ url_for('student_projects') }}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <span class="material-symbols-outlined">list_alt</span>
+                Projects
+            </a>
+            <a href="#"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <span class="material-symbols-outlined">school</span>
+                Grades
+            </a>
+        </nav>
+
+        <!-- User Profile -->
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                    <span class="material-symbols-outlined">person</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-gray-900 truncate">Alex Student</p>
+                    <p class="text-xs text-gray-500 truncate">alex@uni.edu</p>
+                </div>
+                <a href="{{ url_for('login') }}" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <span class="material-symbols-outlined">logout</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 ml-64 p-8 overflow-y-auto h-screen">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+                <p class="text-gray-500 text-sm">Welcome back to your academic portal.</p>
+            </div>
+            <button class="relative p-2 text-gray-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">notifications</span>
+                <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Active Project Card -->
+            <div class="bg-surface p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                        <span class="material-symbols-outlined">folder_open</span>
+                    </div>
+                    <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Active</span>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-1">Current Project</h3>
+                <p class="text-gray-500 text-sm mb-4">Database Systems Implementation</p>
+                <a href="{{ url_for('student_project_detail') }}"
+                    class="text-primary text-sm font-semibold hover:underline flex items-center gap-1">
+                    View Details <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+            </div>
+
+            <!-- Deadlines Card -->
+            <div class="bg-surface p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                        <span class="material-symbols-outlined">event</span>
+                    </div>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-1">Upcoming Deadline</h3>
+                <p class="text-gray-500 text-sm mb-4">ER Diagram Submission - Tomorrow</p>
+                <span class="text-sm text-red-500 font-medium">1 day remaining</span>
+            </div>
+
+            <!-- Notification Summary -->
+            <div class="bg-surface p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-2 bg-orange-50 text-orange-600 rounded-lg">
+                        <span class="material-symbols-outlined">notifications_active</span>
+                    </div>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-1">New Notifications</h3>
+                <p class="text-gray-500 text-sm mb-4">You have 2 unread messages.</p>
+                <a href="#" class="text-primary text-sm font-semibold hover:underline">View All</a>
+            </div>
+        </div>
+
+        <!-- Recent Activity & Notifications -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Activity Log -->
+            <section class="bg-surface rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-gray-400">history</span>
+                    Recent Activity
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex gap-4">
+                        <div
+                            class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                            <span class="material-symbols-outlined text-sm">upload_file</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">Uploaded "Draft_v1.pdf"</p>
+                            <p class="text-xs text-gray-500">2 hours ago</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div
+                            class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
+                            <span class="material-symbols-outlined text-sm">check_circle</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">Project "DB Systems" Approved</p>
+                            <p class="text-xs text-gray-500">Yesterday</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notifications List -->
+            <section class="bg-surface rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-gray-400">mail</span>
+                    Messages
+                </h2>
+                <div class="space-y-4">
+                    <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-sm font-bold text-gray-900">Supervisor</span>
+                            <span class="text-xs text-text-muted">10:30 AM</span>
+                        </div>
+                        <p class="text-sm text-gray-600">Please review the comments on your last submission.</p>
+                    </div>
+                    <div class="p-3 bg-white rounded-lg border border-gray-100">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-sm font-bold text-gray-900">System</span>
+                            <span class="text-xs text-gray-400">Yesterday</span>
+                        </div>
+                        <p class="text-sm text-gray-600">Maintenance scheduled for this weekend.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+
+</html>

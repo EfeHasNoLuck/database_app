@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>APS Register New User</title>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2563eb", "background-light": "#f8fafc", "background-dark": "#0f172a", "surface-light": "#ffffff",
+                        "surface-dark": "#1e293b", "border-light": "#cbd5e1", "border-dark": "#334155",
+                        "text-main-light": "#0f172a", "text-main-dark": "#f1f5f9",
+                        "text-sub-light": "#64748b",
+                        "text-sub-dark": "#94a3b8",
+                    },
+                    fontFamily: {
+                        "display": ["Be Vietnam Pro", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .dark ::-webkit-scrollbar-thumb {
+            background-color: #334155;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-background-light dark:bg-background-dark font-display text-text-main-light dark:text-text-main-dark antialiased overflow-x-hidden transition-colors duration-200">
+    <div class="relative flex min-h-screen w-full flex-row">
+        <div class="hidden lg:flex lg:w-1/2 relative bg-background-dark overflow-hidden flex-col justify-between p-12">
+            <div class="absolute inset-0 z-0">
+                <img class="h-full w-full object-cover opacity-40 mix-blend-overlay"
+                    data-alt="Modern university campus building facade with glass windows"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuACWAS5d-ZfEGVZJukYTSf0Y98bBCZ8HxiNnNevzC-QYqwCm6chkKB_4WRJXpH6jncW_0a8EpdnzyC7GVqo_R6dEvfDgQ7hFVyW2ZULfGUul_g-8bfowCLEqI1E2Ah-OMMoiIJJKUYjG2kuaox93434pseAw3R_6Rx_PQGbQTq-Njxo-hoaSP_igCP4ju_X0MSO5l2vW8S8r7gS-LA4Az0MgmG8fdPtKYBE8w7wfOG2IvMHqTmC-nfKRwf0011DMvf7Qrih1gZsSCYY" />
+                <div
+                    class="absolute inset-0 bg-gradient-to-t from-background-dark via-background-dark/80 to-primary/30 mix-blend-multiply">
+                </div>
+            </div>
+            <div class="relative z-10 flex flex-col h-full justify-between">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                        <span class="material-symbols-outlined">school</span>
+                    </div>
+                    <span class="text-white font-bold text-xl tracking-wide">UnivAPS</span>
+                </div>
+                <div class="max-w-lg mb-20">
+                    <h1 class="text-white text-5xl font-bold leading-tight mb-6">Academic Excellence simplified.</h1>
+                    <p class="text-gray-300 text-lg leading-relaxed">
+                        Streamline your thesis submission, track research progress, and collaborate with supervisors in
+                        one unified academic project system.
+                    </p>
+                    <div class="flex gap-4 mt-8">
+                        <div
+                            class="flex items-center gap-2 text-white/80 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">
+                            <span class="material-symbols-outlined text-primary text-sm">verified</span>
+                            <span class="text-sm font-medium">Secure Access</span>
+                        </div>
+                        <div
+                            class="flex items-center gap-2 text-white/80 bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">
+                            <span class="material-symbols-outlined text-primary text-sm">database</span>
+                            <span class="text-sm font-medium">Cloud Database</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-gray-500 text-sm">
+                    © 2026 University Database Course Project.
+                </div>
+            </div>
+        </div>
+        <div
+            class="w-full lg:w-1/2 flex flex-col justify-center items-center px-6 py-12 lg:px-20 bg-background-light dark:bg-background-dark transition-colors duration-200">
+            <div class="w-full max-w-[480px] flex flex-col gap-8">
+                <div class="lg:hidden flex items-center gap-2 mb-4 self-center">
+                    <div class="w-8 h-8 bg-primary rounded flex items-center justify-center text-white">
+                        <span class="material-symbols-outlined text-sm">school</span>
+                    </div>
+                    <span class="text-text-main-light dark:text-white font-bold text-lg">UnivAPS</span>
+                </div>
+                <div class="w-full">
+                    <div class="flex border-b border-border-light dark:border-border-dark gap-8">
+                        <a href="{{ url_for('login') }}"
+                            class="flex flex-col items-center justify-center border-b-[3px] border-b-transparent text-text-sub-light dark:text-text-sub-dark hover:text-text-main-light dark:hover:text-white pb-3 pt-2 px-2 transition-colors">
+                            <span class="text-base font-bold leading-normal tracking-[0.015em]">Login</span>
+                        </a>
+                        <button
+                            class="flex flex-col items-center justify-center border-b-[3px] border-b-primary text-text-main-light dark:text-white pb-3 pt-2 px-2 transition-colors">
+                            <span class="text-base font-bold leading-normal tracking-[0.015em]">Register</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <h2 class="text-text-main-light dark:text-white text-[32px] font-bold leading-tight">Create an
+                        account</h2>
+                    <p class="text-text-sub-light dark:text-text-sub-dark text-base font-normal">Join the academic
+                        network to manage your projects.</p>
+                </div>
+                <form class="flex flex-col gap-5" action="/register" method="POST">
+                    <label class="flex flex-col gap-2">
+                        <span class="text-text-main-light dark:text-text-main-dark text-sm font-semibold">Full
+                            Name</span>
+                        <div class="relative">
+                            <input
+                                class="w-full rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark h-14 px-4 text-text-main-light dark:text-white placeholder:text-text-sub-light dark:placeholder:text-text-sub-dark focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+                                placeholder="John Doe" type="text" name="first_name" required />
+                            <div
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-text-sub-light dark:text-text-sub-dark pointer-events-none flex items-center">
+                                <span class="material-symbols-outlined text-[20px]">person</span>
+                            </div>
+                        </div>
+                    </label>
+                    <label class="flex flex-col gap-2">
+                        <span class="text-text-main-light dark:text-text-main-dark text-sm font-semibold">University
+                            Email</span>
+                        <div class="relative">
+                            <input
+                                class="w-full rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark h-14 px-4 text-text-main-light dark:text-white placeholder:text-text-sub-light dark:placeholder:text-text-sub-dark focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+                                placeholder="student@university.edu" type="email" name="email" required />
+                            <div
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-text-sub-light dark:text-text-sub-dark pointer-events-none flex items-center">
+                                <span class="material-symbols-outlined text-[20px]">mail</span>
+                            </div>
+                        </div>
+                    </label>
+                    <label class="flex flex-col gap-2">
+                        <span class="text-text-main-light dark:text-text-main-dark text-sm font-semibold">Select
+                            Role</span>
+                        <div class="relative">
+                            <select name="role" required
+                                class="w-full rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark h-14 px-4 text-text-main-light dark:text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none appearance-none cursor-pointer transition-all">
+                                <option disabled="" selected="" value="">Select your account type</option>
+                                <option value="student">Student Researcher</option>
+                                <option value="supervisor">Project Supervisor</option>
+                                <option value="admin">System Administrator</option>
+                            </select>
+                            <div
+                                class="absolute right-4 top-1/2 -translate-y-1/2 text-text-sub-light dark:text-text-sub-dark pointer-events-none flex items-center">
+                                <span class="material-symbols-outlined">expand_more</span>
+                            </div>
+                        </div>
+                    </label>
+                    <label class="flex flex-col gap-2">
+                        <span
+                            class="text-text-main-light dark:text-text-main-dark text-sm font-semibold">Password</span>
+                        <div class="relative flex w-full items-stretch rounded-lg">
+                            <input
+                                class="flex-1 rounded-l-lg rounded-r-none bg-surface-light dark:bg-surface-dark border border-r-0 border-border-light dark:border-border-dark h-14 px-4 text-text-main-light dark:text-white placeholder:text-text-sub-light dark:placeholder:text-text-sub-dark focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all z-10"
+                                placeholder="Create a password" type="password" name="password" required />
+                            <button
+                                class="flex items-center justify-center px-4 rounded-r-lg bg-surface-light dark:bg-surface-dark border border-l-0 border-border-light dark:border-border-dark text-text-sub-light dark:text-text-sub-dark hover:text-primary transition-colors cursor-pointer"
+                                type="button">
+                                <span class="material-symbols-outlined">visibility</span>
+                            </button>
+                        </div>
+                    </label>
+                    <button
+                        class="mt-4 w-full h-14 bg-primary hover:bg-blue-700 text-white font-bold rounded-lg shadow-sm hover:shadow-md transition-all active:scale-[0.99] flex items-center justify-center gap-2">
+                        <span>Register</span>
+                        <span class="material-symbols-outlined text-sm">person_add</span>
+                    </button>
+                </form>
+                <div class="flex flex-col gap-4 text-center mt-2">
+                    <p class="text-text-sub-light dark:text-text-sub-dark text-sm">
+                        Already have an account?
+                        <a class="text-text-main-light dark:text-white font-semibold hover:underline"
+                            href="{{ url_for('login') }}">Login</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
