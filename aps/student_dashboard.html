@@ -1,285 +1,198 @@
 <!DOCTYPE html>
+<html lang="en" class="light">
 
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Student Dashboard - APS</title>
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;900&amp;family=Noto+Sans:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - APS</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script>
         tailwind.config = {
-            darkMode: "class",
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#ea2a33",
-                        "background-light": "#f8f6f6",
-                        "background-dark": "#211111",
-                        "border-light": "#f3e7e8",
-                        "text-main": "#1b0e0e",
-                        "text-muted": "#994d51",
+                        primary: '#2563eb', // Academic Blue
+                        secondary: '#475569',
+                        background: '#f8f9fa',
+                        surface: '#ffffff',
                     },
                     fontFamily: {
-                        "display": ["Be Vietnam Pro", "sans-serif"],
-                        "body": ["Noto Sans", "sans-serif"]
-                    },
-                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
-                },
-            },
+                        sans: ['Be Vietnam Pro', 'sans-serif'],
+                    }
+                }
+            }
         }
     </script>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        .icon-filled {
-            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        /* Custom scrollbar for cleaner look */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #e5e7eb;
-            border-radius: 3px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #d1d5db;
-        }
-    </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-text-main antialiased overflow-hidden">
-<div class="flex h-screen w-full overflow-hidden">
-<!-- Sidebar -->
-<aside class="hidden w-64 flex-col justify-between border-r border-border-light bg-white/50 dark:bg-[#2a1a1a] p-4 md:flex">
-<div class="flex flex-col gap-6">
-<!-- Brand -->
-<div class="flex items-center gap-3 px-2">
-<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white">
-<span class="material-symbols-outlined text-2xl">school</span>
-</div>
-<div class="flex flex-col">
-<h1 class="text-base font-bold leading-none text-text-main">APS</h1>
-<p class="text-xs font-medium text-text-muted">Student Portal</p>
-</div>
-</div>
-<!-- Navigation -->
-<nav class="flex flex-col gap-2">
-<a class="group flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-2 text-primary" href="#">
-<span class="material-symbols-outlined icon-filled text-2xl">dashboard</span>
-<span class="text-sm font-medium">Dashboard</span>
-</a>
-<a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-text-main hover:bg-black/5 hover:text-primary dark:text-white dark:hover:bg-white/10" href="#">
-<span class="material-symbols-outlined text-2xl">view_kanban</span>
-<span class="text-sm font-medium">My Projects</span>
-</a>
-<a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-text-main hover:bg-black/5 hover:text-primary dark:text-white dark:hover:bg-white/10" href="#">
-<span class="material-symbols-outlined text-2xl">group</span>
-<span class="text-sm font-medium">Teams</span>
-</a>
-<a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-text-main hover:bg-black/5 hover:text-primary dark:text-white dark:hover:bg-white/10" href="#">
-<span class="material-symbols-outlined text-2xl">school</span>
-<span class="text-sm font-medium">Grades</span>
-</a>
-<a class="group flex items-center gap-3 rounded-lg px-3 py-2 text-text-main hover:bg-black/5 hover:text-primary dark:text-white dark:hover:bg-white/10" href="#">
-<span class="material-symbols-outlined text-2xl">settings</span>
-<span class="text-sm font-medium">Settings</span>
-</a>
-</nav>
-</div>
-<!-- Bottom Action -->
-<div class="flex items-center gap-3 rounded-lg border border-border-light p-3">
-<div class="h-10 w-10 overflow-hidden rounded-full bg-gray-200 bg-cover bg-center" data-alt="User avatar placeholder" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA87aBxiNsfJWLGFRxDm4rHUUGl_dlBi9F-ERsiaaR6jXU3BqCOT1gHQo108PU0D0K5uG4cX0a8Qg3uZoGFHGGY8h5GYN79tGt2cZSqRgvjjtjRGhJMBBhrNK9PugRUd1E0ujnLszvKoCi8WRhSbZ0iIDaa5jU7C8Hd0603VkNqknVOGFxCfKEZfF6WgFj7vCmnjSAirLQxoGG8X476bo11eSbe0aS4ci8wqjb-55Pbpv6RqJzrHOdYBYwwzcCNpH5u0QBPP2yXIrGm')"></div>
-<div class="flex flex-1 flex-col overflow-hidden">
-<p class="truncate text-sm font-bold text-text-main dark:text-white">Alex Morgan</p>
-<p class="truncate text-xs text-text-muted">alex.m@uni.edu</p>
-</div>
-<button class="text-text-muted hover:text-primary">
-<span class="material-symbols-outlined">logout</span>
-</button>
-</div>
-</aside>
-<!-- Main Content Wrapper -->
-<div class="flex flex-1 flex-col overflow-hidden">
-<!-- Top Navbar -->
-<header class="flex h-16 items-center justify-between border-b border-border-light bg-white px-6 dark:bg-[#2a1a1a] dark:border-[#3a2a2a]">
-<div class="flex items-center gap-4 lg:hidden">
-<button class="text-text-main dark:text-white">
-<span class="material-symbols-outlined">menu</span>
-</button>
-<h2 class="text-lg font-bold text-text-main dark:text-white">APS</h2>
-</div>
-<div class="hidden flex-1 items-center gap-8 lg:flex">
-<h2 class="text-lg font-bold leading-tight tracking-tight text-text-main dark:text-white">Academic Project Management</h2>
-<!-- Search -->
-<div class="relative flex max-w-md flex-1 items-center">
-<span class="material-symbols-outlined absolute left-3 text-text-muted">search</span>
-<input class="h-10 w-full rounded-lg border-none bg-background-light py-2 pl-10 pr-4 text-sm text-text-main placeholder-text-muted focus:ring-2 focus:ring-primary dark:bg-white/5 dark:text-white" placeholder="Search projects, courses, or peers..." type="text"/>
-</div>
-</div>
-<div class="flex items-center gap-4">
-<button class="relative flex h-10 w-10 items-center justify-center rounded-lg bg-background-light text-text-main hover:bg-primary/10 hover:text-primary dark:bg-white/5 dark:text-white">
-<span class="material-symbols-outlined">notifications</span>
-<span class="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary ring-2 ring-white"></span>
-</button>
-<button class="flex h-10 w-10 items-center justify-center rounded-lg bg-background-light text-text-main hover:bg-primary/10 hover:text-primary dark:bg-white/5 dark:text-white">
-<span class="material-symbols-outlined">chat_bubble</span>
-</button>
-</div>
-</header>
-<!-- Content Area -->
-<main class="flex flex-1 overflow-hidden">
-<!-- Center Dashboard -->
-<div class="flex-1 overflow-y-auto bg-[#fcf8f8] p-6 dark:bg-background-dark">
-<!-- Breadcrumbs -->
-<div class="mb-6 flex items-center gap-2 text-sm">
-<a class="font-medium text-text-muted hover:text-primary" href="#">Home</a>
-<span class="text-text-muted">/</span>
-<span class="font-medium text-text-main dark:text-white">Dashboard</span>
-</div>
-<!-- Page Heading -->
-<div class="mb-8 flex flex-col gap-1">
-<h1 class="text-3xl font-black tracking-tight text-text-main dark:text-white">Welcome back, Alex</h1>
-<p class="text-text-muted">Here's what's happening with your projects today.</p>
-</div>
-<!-- Dashboard Grid -->
-<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-<!-- Current Project Card -->
-<div class="col-span-1 flex flex-col justify-between rounded-xl border border-border-light bg-white p-6 shadow-sm dark:bg-[#2a1a1a] dark:border-[#3a2a2a] lg:col-span-2">
-<div class="mb-4 flex items-start justify-between">
-<div>
-<span class="mb-2 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary">In Progress</span>
-<h3 class="text-xl font-bold text-text-main dark:text-white">Database Design Phase 2</h3>
-<p class="mt-1 text-sm text-text-muted">CS-401: Advanced Database Systems</p>
-</div>
-<button class="rounded-lg p-2 text-text-muted hover:bg-background-light hover:text-primary dark:hover:bg-white/5">
-<span class="material-symbols-outlined">more_horiz</span>
-</button>
-</div>
-<div class="mt-4 flex items-center justify-between">
-<div class="flex -space-x-3">
-<div class="h-10 w-10 rounded-full border-2 border-white bg-gray-300 bg-cover bg-center dark:border-[#2a1a1a]" data-alt="Team member 1" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAyCX5ai2criw9N09ii3aAuxy38OOpFTaSnd0Xk-3UTzLzn1ffARbEzEYeUVM9BHXaRsufng1X4BwAp5Fo5lXUQH-ui-ryeggPmUxfp8GoFw__RqAZPyWN7n6stxmFdIklcmsfAGssboeE_ZEFUGwJPawo8urxjs-hw67UkyamvKka0akg9uBBuj_i5oy7U-Xh7NKwAgxQRtvW6eUwqaoK-CMN5uI4tuEuAuTRtsw57h86KI4Ib1XFA2kdGYCNTB115gLTLhUAzK45T')"></div>
-<div class="h-10 w-10 rounded-full border-2 border-white bg-gray-300 bg-cover bg-center dark:border-[#2a1a1a]" data-alt="Team member 2" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDCXyNMM7yNhlWVjDy2jF_9Th2ToH3wsUCSAF_dWGEPUHmltDBXQ0Bv126liTT-npB3TipLGYlzl1NIUPYuVoVfAv0tZx3tCtg2fULat3dlCDBWKL3muBmT_DiHvHpqAjeOB9cXSoV4qm5oz_C1rIGiyXcjBq98G3ca3YKzInAEbNIPy17Tkg3UKOwQIeUzoet3cZaZPAnAYa3-fn53iDyjf1sihma2ossuBJBv46wZArEC7gWR90AXibep5fiqxE77cxnaob3IMhwg')"></div>
-<div class="h-10 w-10 rounded-full border-2 border-white bg-gray-300 bg-cover bg-center dark:border-[#2a1a1a]" data-alt="Team member 3" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB9oyTLceqwTLBV7jIYMzRWTu-XTFxZOSj68G0Env4k7M--fWvlg1kgOCqpVgyqbmBJ1IKIYbUofw1F7BcBy-WsatZQ4jwVEcDqgvtLjBXv18Ivxza-DzFReXri1m-ASfpc7NsWrSn1-MTQ1BxXNrg8sZRBDRUqu4ehI4yHFnGRgLAAJW6oBITLNP82HzbXCziCcfyyyjnHxezpDogfl2TMY_Xy_uPH8FWkGmVghLVEdIm0IBg6kqvb6cSsEH_yUYiZhbkMNTNYHj57')"></div>
-<div class="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white bg-background-light text-xs font-bold text-text-muted dark:border-[#2a1a1a] dark:bg-white/10">+2</div>
-</div>
-<button class="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white shadow-lg shadow-primary/30 transition hover:bg-red-600">
-                                    Continue Working
-                                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
-</button>
-</div>
-</div>
-<!-- Overall Progress Card -->
-<div class="col-span-1 flex flex-col items-center justify-center rounded-xl border border-border-light bg-white p-6 shadow-sm dark:bg-[#2a1a1a] dark:border-[#3a2a2a]">
-<h3 class="mb-4 w-full text-left text-base font-bold text-text-main dark:text-white">Overall Progress</h3>
-<div class="relative flex h-40 w-40 items-center justify-center">
-<!-- Circular Progress using conic-gradient -->
-<div class="absolute h-full w-full rounded-full" style="background: conic-gradient(#ea2a33 75%, #f3e7e8 0);"></div>
-<div class="absolute h-32 w-32 rounded-full bg-white dark:bg-[#2a1a1a]"></div>
-<div class="flex flex-col items-center relative z-10">
-<span class="text-3xl font-black text-text-main dark:text-white">75%</span>
-<span class="text-xs font-medium text-text-muted">Completed</span>
-</div>
-</div>
-<p class="mt-4 text-center text-sm text-text-muted">You are ahead of schedule for this term.</p>
-</div>
-<!-- Upcoming Deadlines Card -->
-<div class="col-span-1 flex flex-col rounded-xl border border-border-light bg-white p-6 shadow-sm dark:bg-[#2a1a1a] dark:border-[#3a2a2a] lg:col-span-3">
-<div class="mb-4 flex items-center justify-between">
-<h3 class="text-lg font-bold text-text-main dark:text-white">Upcoming Deadlines</h3>
-<a class="text-sm font-bold text-primary hover:underline" href="#">View Calendar</a>
-</div>
-<div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-<!-- Deadline Item 1 -->
-<div class="flex items-center gap-4 rounded-lg border border-border-light bg-background-light p-4 dark:bg-white/5 dark:border-white/10">
-<div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-red-100 text-primary dark:bg-primary/20">
-<span class="material-symbols-outlined">assignment_late</span>
-</div>
-<div>
-<p class="text-sm font-bold text-text-main dark:text-white">ER Diagram</p>
-<p class="text-xs font-medium text-red-600">Due Tomorrow, 11:59 PM</p>
-</div>
-</div>
-<!-- Deadline Item 2 -->
-<div class="flex items-center gap-4 rounded-lg border border-border-light bg-white p-4 dark:bg-white/5 dark:border-white/10">
-<div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-<span class="material-symbols-outlined">database</span>
-</div>
-<div>
-<p class="text-sm font-bold text-text-main dark:text-white">SQL Query Submission</p>
-<p class="text-xs font-medium text-text-muted">Due Oct 24</p>
-</div>
-</div>
-<!-- Deadline Item 3 -->
-<div class="flex items-center gap-4 rounded-lg border border-border-light bg-white p-4 dark:bg-white/5 dark:border-white/10">
-<div class="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400">
-<span class="material-symbols-outlined">group_work</span>
-</div>
-<div>
-<p class="text-sm font-bold text-text-main dark:text-white">Team Peer Review</p>
-<p class="text-xs font-medium text-text-muted">Due Oct 28</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Right Notifications Panel -->
-<aside class="hidden w-80 flex-col border-l border-border-light bg-white p-6 dark:bg-[#2a1a1a] dark:border-[#3a2a2a] xl:flex">
-<div class="mb-6 flex items-center justify-between">
-<h3 class="text-lg font-bold text-text-main dark:text-white">Notifications</h3>
-<button class="text-text-muted hover:text-primary">
-<span class="material-symbols-outlined text-xl">done_all</span>
-</button>
-</div>
-<div class="flex flex-col gap-6">
-<!-- Notification Item 1 -->
-<div class="flex gap-3">
-<div class="relative h-2 w-2 flex-shrink-0 translate-y-2 rounded-full bg-primary"></div>
-<div class="flex flex-col gap-1">
-<p class="text-sm font-medium text-text-main dark:text-white">Professor Smith graded <span class="font-bold">"Midterm Exam"</span></p>
-<span class="text-xs text-text-muted">2 hours ago</span>
-</div>
-</div>
-<!-- Notification Item 2 -->
-<div class="flex gap-3">
-<div class="relative h-2 w-2 flex-shrink-0 translate-y-2 rounded-full bg-primary"></div>
-<div class="flex flex-col gap-1">
-<p class="text-sm font-medium text-text-main dark:text-white">New comment on <span class="font-bold">"Team Alpha Project"</span></p>
-<p class="text-xs text-text-muted">Sarah: "I've uploaded the new schema file..."</p>
-<span class="mt-1 text-xs text-text-muted">4 hours ago</span>
-</div>
-</div>
-<!-- Notification Item 3 (Read) -->
-<div class="flex gap-3 opacity-60">
-<div class="relative h-2 w-2 flex-shrink-0 translate-y-2 rounded-full bg-gray-300"></div>
-<div class="flex flex-col gap-1">
-<p class="text-sm font-medium text-text-main dark:text-white">Library Due Date Reminder</p>
-<span class="text-xs text-text-muted">Yesterday</span>
-</div>
-</div>
-<!-- Notification Item 4 (Read) -->
-<div class="flex gap-3 opacity-60">
-<div class="relative h-2 w-2 flex-shrink-0 translate-y-2 rounded-full bg-gray-300"></div>
-<div class="flex flex-col gap-1">
-<p class="text-sm font-medium text-text-main dark:text-white">System Maintenance Scheduled</p>
-<span class="text-xs text-text-muted">2 days ago</span>
-</div>
-</div>
-<div class="mt-auto pt-4 border-t border-border-light dark:border-white/10">
-<button class="w-full rounded-lg bg-background-light py-2 text-sm font-bold text-text-main hover:bg-gray-200 dark:bg-white/5 dark:text-white dark:hover:bg-white/10">View All Activity</button>
-</div>
-</div>
-</aside>
-</main>
-</div>
-</div>
-</body></html>
+
+<body class="bg-background text-gray-800 font-sans min-h-screen flex">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-surface border-r border-gray-200 flex flex-col fixed h-full z-10">
+        <!-- Brand -->
+        <div class="h-16 flex items-center px-6 border-b border-gray-100">
+            <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white mr-3">
+                <span class="material-symbols-outlined text-lg">school</span>
+            </div>
+            <span class="font-bold text-xl tracking-tight text-gray-900">UnivAPS</span>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+            <a href="student_dashboard.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium">
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+            <a href="student_projects.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <span class="material-symbols-outlined">list_alt</span>
+                Projects
+            </a>
+            <a href="#"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <span class="material-symbols-outlined">school</span>
+                Grades
+            </a>
+        </nav>
+
+        <!-- User Profile -->
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                    <span class="material-symbols-outlined">person</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-gray-900 truncate">Alex Student</p>
+                    <p class="text-xs text-gray-500 truncate">alex@uni.edu</p>
+                </div>
+                <a href="login.html" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <span class="material-symbols-outlined">logout</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 ml-64 p-8 overflow-y-auto h-screen">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+                <p class="text-gray-500 text-sm">Welcome back to your academic portal.</p>
+            </div>
+            <button class="relative p-2 text-gray-400 hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">notifications</span>
+                <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+            </button>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <!-- Active Project Card -->
+            <div class="bg-surface p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                        <span class="material-symbols-outlined">folder_open</span>
+                    </div>
+                    <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Active</span>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-1">Current Project</h3>
+                <p class="text-gray-500 text-sm mb-4">Database Systems Implementation</p>
+                <a href="student_project_detail.html"
+                    class="text-primary text-sm font-semibold hover:underline flex items-center gap-1">
+                    View Details <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </a>
+            </div>
+
+            <!-- Deadlines Card -->
+            <div class="bg-surface p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                        <span class="material-symbols-outlined">event</span>
+                    </div>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-1">Upcoming Deadline</h3>
+                <p class="text-gray-500 text-sm mb-4">ER Diagram Submission - Tomorrow</p>
+                <span class="text-sm text-red-500 font-medium">1 day remaining</span>
+            </div>
+
+            <!-- Notification Summary -->
+            <div class="bg-surface p-6 rounded-xl shadow-sm border border-gray-100">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="p-2 bg-orange-50 text-orange-600 rounded-lg">
+                        <span class="material-symbols-outlined">notifications_active</span>
+                    </div>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-1">New Notifications</h3>
+                <p class="text-gray-500 text-sm mb-4">You have 2 unread messages.</p>
+                <a href="#" class="text-primary text-sm font-semibold hover:underline">View All</a>
+            </div>
+        </div>
+
+        <!-- Recent Activity & Notifications -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Activity Log -->
+            <section class="bg-surface rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-gray-400">history</span>
+                    Recent Activity
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex gap-4">
+                        <div
+                            class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                            <span class="material-symbols-outlined text-sm">upload_file</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">Uploaded "Draft_v1.pdf"</p>
+                            <p class="text-xs text-gray-500">2 hours ago</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4">
+                        <div
+                            class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
+                            <span class="material-symbols-outlined text-sm">check_circle</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">Project "DB Systems" Approved</p>
+                            <p class="text-xs text-gray-500">Yesterday</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Notifications List -->
+            <section class="bg-surface rounded-xl shadow-sm border border-gray-100 p-6">
+                <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-gray-400">mail</span>
+                    Messages
+                </h2>
+                <div class="space-y-4">
+                    <div class="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-sm font-bold text-gray-900">Supervisor</span>
+                            <span class="text-xs text-text-muted">10:30 AM</span>
+                        </div>
+                        <p class="text-sm text-gray-600">Please review the comments on your last submission.</p>
+                    </div>
+                    <div class="p-3 bg-white rounded-lg border border-gray-100">
+                        <div class="flex justify-between items-start mb-1">
+                            <span class="text-sm font-bold text-gray-900">System</span>
+                            <span class="text-xs text-gray-400">Yesterday</span>
+                        </div>
+                        <p class="text-sm text-gray-600">Maintenance scheduled for this weekend.</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</body>
+
+</html>

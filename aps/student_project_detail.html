@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Details - APS</title>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb', // Academic Blue
+                        secondary: '#475569',
+                        background: '#f8f9fa',
+                        surface: '#ffffff',
+                    },
+                    fontFamily: {
+                        sans: ['Be Vietnam Pro', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-background text-gray-800 font-sans min-h-screen flex">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-surface border-r border-gray-200 flex flex-col fixed h-full z-10">
+        <!-- Brand -->
+        <div class="h-16 flex items-center px-6 border-b border-gray-100">
+            <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white mr-3">
+                <span class="material-symbols-outlined text-lg">school</span>
+            </div>
+            <span class="font-bold text-xl tracking-tight text-gray-900">UnivAPS</span>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+            <a href="student_dashboard.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+            <a href="student_projects.html"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <span class="material-symbols-outlined">list_alt</span>
+                Projects
+            </a>
+            <a href="#"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <span class="material-symbols-outlined">school</span>
+                Grades
+            </a>
+        </nav>
+
+        <!-- User Profile -->
+        <div class="p-4 border-t border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                    <span class="material-symbols-outlined">person</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-gray-900 truncate">Alex Student</p>
+                    <p class="text-xs text-gray-500 truncate">alex@uni.edu</p>
+                </div>
+                <a href="login.html" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <span class="material-symbols-outlined">logout</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 ml-64 p-8 overflow-y-auto h-screen">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                <a href="student_dashboard.html" class="hover:text-primary">Dashboard</a>
+                <span>/</span>
+                <span class="text-gray-900 font-medium">Database Systems Implementation</span>
+            </div>
+            <div class="flex justify-between items-start">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Database Systems Implementation</h1>
+                    <p class="text-gray-600 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-gray-400">supervisor_account</span>
+                        Supervisor: Prof. Ada Lovelace
+                    </p>
+                </div>
+                <span class="px-3 py-1 bg-green-100 text-green-700 font-bold rounded-lg text-sm">Active</span>
+            </div>
+        </div>
+
+        <!-- Layout Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Left Column: Tasks List -->
+            <div class="lg:col-span-2 space-y-6">
+                <h2 class="text-xl font-bold text-gray-900 border-b border-gray-200 pb-2">Course Tasks</h2>
+
+                <!-- Task Item 1 -->
+                <div class="bg-surface rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Task 1: ER Diagram Design</h3>
+                            <p class="text-sm text-gray-500">Due: Oct 24, 2023</p>
+                        </div>
+                        <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded">Pending
+                            Submission</span>
+                    </div>
+                    <p class="text-gray-600 text-sm mb-6 leading-relaxed">
+                        Create a normalized Entity-Relationship diagram for the proposed system. Ensure all
+                        relationships and cardinalities are clearly defined.
+                    </p>
+
+                    <!-- Submission Area -->
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <h4 class="text-sm font-bold text-gray-900 mb-2">Upload Submission</h4>
+                        <div class="flex items-center gap-4">
+                            <input type="file"
+                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            <button
+                                class="px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition">Submit</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task Item 2 -->
+                <div class="bg-surface rounded-xl border border-gray-200 p-6 shadow-sm opacity-75">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Task 2: SQL Implementation</h3>
+                            <p class="text-sm text-gray-500">Due: Nov 10, 2023</p>
+                        </div>
+                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded">Locked</span>
+                    </div>
+                    <p class="text-gray-600 text-sm">
+                        Implement the database schema using SQL DDL commands. Content will be available after Task 1 is
+                        graded.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Column: Recent Evaluations/Feedback -->
+            <div class="space-y-6">
+                <h2 class="text-xl font-bold text-gray-900 border-b border-gray-200 pb-2">Evaluations</h2>
+
+                <div class="bg-surface rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div
+                            class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                            <span class="material-symbols-outlined">grade</span>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900">Project Proposal</h3>
+                            <p class="text-xs text-gray-500">Graded on Oct 10</p>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <span class="text-3xl font-bold text-gray-900">85</span><span class="text-gray-500">/100</span>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg text-sm text-gray-600 italic">
+                        "Good scope definition. The methodology section needs a bit more detail on the technology
+                        stack."
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                    <h3 class="font-bold text-blue-900 mb-2 text-sm">Course Statistics</h3>
+                    <div class="flex justify-between items-center text-sm text-blue-800 mb-1">
+                        <span>Tasks Completed:</span>
+                        <span class="font-bold">1 / 5</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm text-blue-800">
+                        <span>Average Grade:</span>
+                        <span class="font-bold">85%</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</body>
+
+</html>
