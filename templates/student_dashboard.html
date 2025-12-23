@@ -104,19 +104,11 @@
                     <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Active</span>
                 </div>
                 <h3 class="text-lg font-bold text-gray-900 mb-1">Current Project</h3>
-                {% if current_project %}
-                <p class="text-primary font-medium text-sm mb-4">{{ current_project.title }}</p>
-                <a href="{{ url_for('student_project_detail', project_id=current_project.project_id) }}"
+                <p class="text-gray-500 text-sm mb-4">Database Systems Implementation</p>
+                <a href="{{ url_for('student_project_detail') }}"
                     class="text-primary text-sm font-semibold hover:underline flex items-center gap-1">
                     View Details <span class="material-symbols-outlined text-sm">arrow_forward</span>
                 </a>
-                {% else %}
-                <p class="text-gray-400 italic text-sm mb-4">No active project selected.</p>
-                <a href="{{ url_for('student_projects') }}"
-                    class="text-primary text-sm font-semibold hover:underline flex items-center gap-1">
-                    Browse Projects <span class="material-symbols-outlined text-sm">search</span>
-                </a>
-                {% endif %}
             </div>
 
             <!-- Deadlines Card -->
