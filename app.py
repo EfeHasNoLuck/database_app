@@ -110,38 +110,96 @@ def register():
 # --- Student Routes ---
 @app.route('/student_dashboard')
 def student_dashboard():
-    # TODO: Fetch real data
-    return render_template('student_dashboard.html')
+    if 'role' not in session or session['role'] != 'student':
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    current_project = None
+    
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            # Find student_id
+            cursor.execute("SELECT student_id FROM Student WHERE user_id = %s", (session['user_id'],))
+            student = cursor.fetchone()
+            
+            if student:
+                student_id = student['student_id']
+                # Check for active selection
+                query = """
+                    SELECT p.title, p.description, p.project_id, s.status, s.selection_id
+                    FROM Selection s
+                    JOIN Project p ON s.project_id = p.project_id
+                    WHERE s.student_id = %s AND s.status IN ('approved', 'pending')
+                    LIMIT 1
+                """
+                cursor.execute(query, (student_id,))
+                current_project = cursor.fetchone()
+                
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error fetching dashboard data: {err}")
+            
+    return render_template('student_dashboard.html', current_project=current_project)
 
-@app.route('/student_projects')
-def student_projects():
-    return render_template('student_projects.html')
-
-@app.route('/student_project_detail')
-def student_project_detail():
-    return render_template('student_project_detail.html')
-
-# --- Supervisor Routes ---
 @app.route('/supervisor_dashboard')
 def supervisor_dashboard():
-    return render_template('supervisor_dashboard.html')
+    if 'role' not in session or session['role'] != 'supervisor':
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    stats = {
+        'active_projects': 0,
+        'active_students': 0,
+        'pending_reviews': 0
+    }
+    active_projects_list = []
+    
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            # Get supervisor_id
+            cursor.execute("SELECT supervisor_id FROM Supervisor WHERE user_id = %s", (session['user_id'],))
+            sup = cursor.fetchone()
+            
+            if sup:
+                supervisor_id = sup['supervisor_id']
+                
+                # Active Projects
+                cursor.execute("SELECT COUNT(*) as count FROM Project WHERE supervisor_id = %s AND status = 'active'", (supervisor_id,))
+                stats['active_projects'] = cursor.fetchone()['count']
+                
+                # Active Students (Students with approved selection in my projects)
+                cursor.execute("""
+                    SELECT COUNT(DISTINCT s.student_id) as count 
+                    FROM Selection s
+                    JOIN Project p ON s.project_id = p.project_id
+                    WHERE p.supervisor_id = %s AND s.status = 'approved'
+                """, (supervisor_id,))
+                stats['active_students'] = cursor.fetchone()['count']
+                
+                # Pending Reviews (Submissions in my projects + pending selections?) 
+                # For now, just pending evaluations (Submissions without evaluation) - Simplify to 0 or logic later
+                # Let's count pending Selections for simplicity in this turn as "Action Required"
+                cursor.execute("""
+                    SELECT COUNT(*) as count 
+                    FROM Selection s
+                    JOIN Project p ON s.project_id = p.project_id
+                    WHERE p.supervisor_id = %s AND s.status = 'pending'
+                """, (supervisor_id,))
+                stats['pending_reviews'] = cursor.fetchone()['count']
 
-@app.route('/supervisor_project_detail')
-def supervisor_project_detail():
-    return render_template('supervisor_project_detail.html')
+                # Active Projects List
+                cursor.execute("SELECT * FROM Project WHERE supervisor_id = %s LIMIT 5", (supervisor_id,))
+                active_projects_list = cursor.fetchall()
+                
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+             print(f"Error fetching supervisor stats: {err}")
 
-@app.route('/supervisor_evaluation')
-def supervisor_evaluation():
-    return render_template('supervisor_evaluation.html')
-
-# --- Admin Routes ---
-@app.route('/admin_dashboard')
-def admin_dashboard():
-    return render_template('admin_dashboard.html')
-
-@app.route('/admin_users')
-def admin_users():
-    return render_template('admin_users.html')
+    return render_template('supervisor_dashboard.html', stats=stats, projects=active_projects_list)
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5000, host='0.0.0.0')

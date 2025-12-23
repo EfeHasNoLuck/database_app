@@ -138,45 +138,32 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-50">
-                    <!-- User Row 1 -->
+                    {% for user in users %}
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 <div
-                                    class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
-                                    JS</div>
-                                <span class="font-bold text-gray-900">John Smith</span>
+                                    class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs uppercase">
+                                    {{ user.first_name[0] }}{{ user.last_name[0] if user.last_name else '' }}
+                                </div>
+                                <span class="font-bold text-gray-900">{{ user.first_name }} {{ user.last_name }}</span>
                             </div>
                         </td>
-                        <td class="px-6 py-4"><span
+                        <td class="px-6 py-4">
+                            {% if user.role == 'student' %}
+                            <span
                                 class="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full">Student</span>
-                        </td>
-                        <td class="px-6 py-4">john.smith@uni.edu</td>
-                        <td class="px-6 py-4"><span
-                                class="flex items-center gap-1.5 text-green-600 font-medium text-xs"><span
-                                    class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Active</span></td>
-                        <td class="px-6 py-4 text-right">
-                            <button class="text-gray-400 hover:text-primary transition-colors mx-1"><span
-                                    class="material-symbols-outlined text-lg">edit</span></button>
-                            <button class="text-gray-400 hover:text-red-500 transition-colors mx-1"><span
-                                    class="material-symbols-outlined text-lg">delete</span></button>
-                        </td>
-                    </tr>
-
-                    <!-- User Row 2 -->
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-xs">
-                                    AL</div>
-                                <span class="font-bold text-gray-900">Prof. Ada Lovelace</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4"><span
+                            {% elif user.role == 'supervisor' %}
+                            <span
                                 class="px-2 py-1 bg-purple-50 text-purple-700 text-xs font-bold rounded-full">Supervisor</span>
+                            {% elif user.role == 'admin' %}
+                            <span class="px-2 py-1 bg-red-50 text-red-700 text-xs font-bold rounded-full">Admin</span>
+                            {% else %}
+                            <span class="px-2 py-1 bg-gray-50 text-gray-700 text-xs font-bold rounded-full">{{ user.role
+                                }}</span>
+                            {% endif %}
                         </td>
-                        <td class="px-6 py-4">ada.lovelace@uni.edu</td>
+                        <td class="px-6 py-4">{{ user.email }}</td>
                         <td class="px-6 py-4"><span
                                 class="flex items-center gap-1.5 text-green-600 font-medium text-xs"><span
                                     class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Active</span></td>
@@ -187,51 +174,11 @@
                                     class="material-symbols-outlined text-lg">delete</span></button>
                         </td>
                     </tr>
-
-                    <!-- User Row 3 -->
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xs">
-                                    MR</div>
-                                <span class="font-bold text-gray-900">Michael Ross</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4"><span
-                                class="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-full">Student</span>
-                        </td>
-                        <td class="px-6 py-4">m.ross@uni.edu</td>
-                        <td class="px-6 py-4"><span
-                                class="flex items-center gap-1.5 text-gray-400 font-medium text-xs"><span
-                                    class="w-1.5 h-1.5 rounded-full bg-gray-300"></span>Inactive</span></td>
-                        <td class="px-6 py-4 text-right">
-                            <button
-                                class="text-primary hover:text-primary transition-colors mx-1 font-bold text-xs">Invite</button>
-                        </td>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">No users found.</td>
                     </tr>
-                    <!-- User Row 4 -->
-                    <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-3">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 font-bold text-xs">
-                                    SA</div>
-                                <span class="font-bold text-gray-900">System Admin</span>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4"><span
-                                class="px-2 py-1 bg-red-50 text-red-700 text-xs font-bold rounded-full">Admin</span>
-                        </td>
-                        <td class="px-6 py-4">admin@uni.edu</td>
-                        <td class="px-6 py-4"><span
-                                class="flex items-center gap-1.5 text-green-600 font-medium text-xs"><span
-                                    class="w-1.5 h-1.5 rounded-full bg-green-500"></span>Active</span></td>
-                        <td class="px-6 py-4 text-right">
-                            <button class="text-gray-400 hover:text-primary transition-colors mx-1"><span
-                                    class="material-symbols-outlined text-lg">settings</span></button>
-                        </td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
             <!-- Pagination -->
