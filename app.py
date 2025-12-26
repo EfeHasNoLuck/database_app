@@ -107,19 +107,45 @@ def register():
 
     return render_template('register.html')
 
+# Helper to fetch simplified user info
+def get_user_info(user_id):
+    conn = get_db_connection()
+    user = None
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT first_name, last_name, email FROM User WHERE user_id = %s", (user_id,))
+            user = cursor.fetchone()
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error fetching user data: {err}")
+    return user
+
 # --- Student Routes ---
 @app.route('/student_dashboard')
 def student_dashboard():
-    # TODO: Fetch real data
-    return render_template('student_dashboard.html')
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    user = get_user_info(session['user_id'])
+    return render_template('student_dashboard.html', user=user)
 
 @app.route('/student_projects')
 def student_projects():
-    return render_template('student_projects.html')
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    user = get_user_info(session['user_id'])
+    return render_template('student_projects.html', user=user)
 
 @app.route('/student_project_detail')
 def student_project_detail():
-    return render_template('student_project_detail.html')
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    user = get_user_info(session['user_id'])
+    return render_template('student_project_detail.html', user=user)
 
 # --- Supervisor Routes ---
 @app.route('/supervisor_dashboard')

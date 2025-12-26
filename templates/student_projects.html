@@ -69,8 +69,8 @@
                     <span class="material-symbols-outlined">person</span>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-gray-900 truncate">Alex Student</p>
-                    <p class="text-xs text-gray-500 truncate">alex@uni.edu</p>
+                    <p class="text-sm font-bold text-gray-900 truncate">{{ user.first_name }} {{ user.last_name }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
                 </div>
                 <a href="{{ url_for('login') }}" class="text-gray-400 hover:text-red-500 transition-colors">
                     <span class="material-symbols-outlined">logout</span>
