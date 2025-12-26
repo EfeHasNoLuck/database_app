@@ -55,11 +55,6 @@
                 <span class="material-symbols-outlined">list_alt</span>
                 Projects
             </a>
-            <a href="#"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
-                <span class="material-symbols-outlined">school</span>
-                Grades
-            </a>
         </nav>
 
         <!-- User Profile -->
@@ -86,17 +81,18 @@
             <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
                 <a href="{{ url_for('student_dashboard') }}" class="hover:text-primary">Dashboard</a>
                 <span>/</span>
-                <span class="text-gray-900 font-medium">Database Systems Implementation</span>
+                <span class="text-gray-900 font-medium">{{ project.title }}</span>
             </div>
             <div class="flex justify-between items-start">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Database Systems Implementation</h1>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ project.title }}</h1>
                     <p class="text-gray-600 flex items-center gap-2">
                         <span class="material-symbols-outlined text-gray-400">supervisor_account</span>
-                        Supervisor: Prof. Ada Lovelace
+                        Supervisor: {{ project.sup_title }} {{ project.first_name }} {{ project.last_name }}
                     </p>
                 </div>
-                <span class="px-3 py-1 bg-green-100 text-green-700 font-bold rounded-lg text-sm">Active</span>
+                <span class="px-3 py-1 bg-green-100 text-green-700 font-bold rounded-lg text-sm capitalize">{{
+                    project.status }}</span>
             </div>
         </div>
 
@@ -107,19 +103,19 @@
             <div class="lg:col-span-2 space-y-6">
                 <h2 class="text-xl font-bold text-gray-900 border-b border-gray-200 pb-2">Course Tasks</h2>
 
-                <!-- Task Item 1 -->
+                {% for task in tasks %}
+                <!-- Task Item -->
                 <div class="bg-surface rounded-xl border border-gray-200 p-6 shadow-sm">
                     <div class="flex justify-between items-start mb-4">
                         <div>
-                            <h3 class="text-lg font-bold text-gray-900">Task 1: ER Diagram Design</h3>
-                            <p class="text-sm text-gray-500">Due: Oct 24, 2023</p>
+                            <h3 class="text-lg font-bold text-gray-900">{{ task.title }}</h3>
+                            <p class="text-sm text-gray-500">Due: {{ task.deadline }}</p>
                         </div>
                         <span class="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded">Pending
                             Submission</span>
                     </div>
                     <p class="text-gray-600 text-sm mb-6 leading-relaxed">
-                        Create a normalized Entity-Relationship diagram for the proposed system. Ensure all
-                        relationships and cardinalities are clearly defined.
+                        {{ task.instruction }}
                     </p>
 
                     <!-- Submission Area -->
@@ -133,27 +129,22 @@
                         </div>
                     </div>
                 </div>
+                {% endfor %}
 
-                <!-- Task Item 2 -->
-                <div class="bg-surface rounded-xl border border-gray-200 p-6 shadow-sm opacity-75">
-                    <div class="flex justify-between items-start mb-4">
-                        <div>
-                            <h3 class="text-lg font-bold text-gray-900">Task 2: SQL Implementation</h3>
-                            <p class="text-sm text-gray-500">Due: Nov 10, 2023</p>
-                        </div>
-                        <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-bold rounded">Locked</span>
-                    </div>
-                    <p class="text-gray-600 text-sm">
-                        Implement the database schema using SQL DDL commands. Content will be available after Task 1 is
-                        graded.
-                    </p>
+                {% if not tasks %}
+                <div class="p-6 text-center text-gray-500">
+                    No tasks assigned for this project yet.
                 </div>
+                {% endif %}
             </div>
 
             <!-- Right Column: Recent Evaluations/Feedback -->
             <div class="space-y-6">
+                <!-- Evaluations Section with Condition -->
+                {% if evaluations %}
                 <h2 class="text-xl font-bold text-gray-900 border-b border-gray-200 pb-2">Evaluations</h2>
 
+                {% for eval in evaluations %}
                 <div class="bg-surface rounded-xl border border-gray-200 p-6 shadow-sm">
                     <div class="flex items-center gap-3 mb-4">
                         <div
@@ -161,30 +152,24 @@
                             <span class="material-symbols-outlined">grade</span>
                         </div>
                         <div>
-                            <h3 class="text-sm font-bold text-gray-900">Project Proposal</h3>
-                            <p class="text-xs text-gray-500">Graded on Oct 10</p>
+                            <h3 class="text-sm font-bold text-gray-900">{{ eval.task_title }}</h3>
+                            <p class="text-xs text-gray-500">Graded on {{ eval.evaluation_date }}</p>
                         </div>
                     </div>
                     <div class="mb-4">
-                        <span class="text-3xl font-bold text-gray-900">85</span><span class="text-gray-500">/100</span>
+                        <span class="text-3xl font-bold text-gray-900">{{ eval.grade }}</span><span
+                            class="text-gray-500">/100</span>
                     </div>
                     <div class="bg-gray-50 p-3 rounded-lg text-sm text-gray-600 italic">
-                        "Good scope definition. The methodology section needs a bit more detail on the technology
-                        stack."
+                        "{{ eval.feedback }}"
                     </div>
                 </div>
+                {% endfor %}
 
-                <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                    <h3 class="font-bold text-blue-900 mb-2 text-sm">Course Statistics</h3>
-                    <div class="flex justify-between items-center text-sm text-blue-800 mb-1">
-                        <span>Tasks Completed:</span>
-                        <span class="font-bold">1 / 5</span>
-                    </div>
-                    <div class="flex justify-between items-center text-sm text-blue-800">
-                        <span>Average Grade:</span>
-                        <span class="font-bold">85%</span>
-                    </div>
-                </div>
+                {% endif %}
+
+                <!-- Course Stats Placeholder if needed -->
+                <!-- Removed hardcoded stats for simplicity unless requested -->
             </div>
 
         </div>

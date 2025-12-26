@@ -129,7 +129,61 @@ def student_dashboard():
         return redirect(url_for('login'))
         
     user = get_user_info(session['user_id'])
-    return render_template('student_dashboard.html', user=user)
+    conn = get_db_connection()
+    active_project = None
+    activities = []
+    
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            # 1. Fetch Active Project
+            cursor.execute("SELECT student_id FROM Student WHERE user_id = %s", (session['user_id'],))
+            student = cursor.fetchone()
+            if student:
+                query_project = """
+                    SELECT P.title, P.status
+                    FROM Project P
+                    JOIN Selection Sel ON P.project_id = Sel.project_id
+                    WHERE Sel.student_id = %s AND Sel.status = 'approved'
+                """
+                cursor.execute(query_project, (student['student_id'],))
+                active_project = cursor.fetchone()
+                
+                # 2. Fetch Recent Activity (Mocking/Simulating from Submissions and Selection)
+                # In a real app, you might have a dedicated Activity_Log table or complex union query
+                # Here we'll just check for recent submissions and if they have a project selected
+                
+                # Selection Activity
+                cursor.execute("""
+                    SELECT 'check_circle' as icon, CONCAT('Project "', P.title, '" ', Sel.status) as text, Sel.status as type, 'Recently' as time
+                    FROM Selection Sel
+                    JOIN Project P ON Sel.project_id = P.project_id
+                    WHERE Sel.student_id = %s
+                    ORDER BY Sel.selection_id DESC LIMIT 1
+                """, (student['student_id'],))
+                selection_act = cursor.fetchone()
+                if selection_act:
+                    activities.append(selection_act)
+                    
+                # Submission Activity
+                cursor.execute("""
+                    SELECT 'upload_file' as icon, CONCAT('Submitted for "', T.title, '"') as text, 'submission' as type, S.submission_date as time
+                    FROM Submission S
+                    JOIN Task T ON S.task_id = T.task_id
+                    WHERE S.student_id = %s
+                    ORDER BY S.submission_date DESC LIMIT 5
+                """, (student['student_id'],))
+                submission_acts = cursor.fetchall()
+                for act in submission_acts:
+                    # Format time a bit if it's a datetime object, or let Jinja handle
+                    activities.append(act)
+                
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error fetching dashboard data: {err}")
+            
+    return render_template('student_dashboard.html', user=user, active_project=active_project, activities=activities)
 
 @app.route('/student_projects')
 def student_projects():
@@ -137,7 +191,39 @@ def student_projects():
         return redirect(url_for('login'))
         
     user = get_user_info(session['user_id'])
-    return render_template('student_projects.html', user=user)
+    conn = get_db_connection()
+    projects = []
+    selected_project_id = None
+    
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            # Fetch all projects with supervisor names
+            query = """
+                SELECT P.*, U.first_name, U.last_name, S.title as sup_title
+                FROM Project P
+                JOIN Supervisor S ON P.supervisor_id = S.supervisor_id
+                JOIN User U ON S.user_id = U.user_id
+            """
+            cursor.execute(query)
+            projects = cursor.fetchall()
+            
+            # Check if student has a selection
+            # First get student_id
+            cursor.execute("SELECT student_id FROM Student WHERE user_id = %s", (session['user_id'],))
+            student = cursor.fetchone()
+            if student:
+                cursor.execute("SELECT project_id FROM Selection WHERE student_id = %s", (student['student_id'],))
+                selection = cursor.fetchone()
+                if selection:
+                    selected_project_id = selection['project_id']
+            
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error fetching projects: {err}")
+            
+    return render_template('student_projects.html', user=user, projects=projects, selected_project_id=selected_project_id)
 
 @app.route('/student_project_detail')
 def student_project_detail():
@@ -145,7 +231,54 @@ def student_project_detail():
         return redirect(url_for('login'))
         
     user = get_user_info(session['user_id'])
-    return render_template('student_project_detail.html', user=user)
+    conn = get_db_connection()
+    project = None
+    tasks = []
+    evaluations = []
+    
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            # Get student's selected project
+            cursor.execute("SELECT student_id FROM Student WHERE user_id = %s", (session['user_id'],))
+            student = cursor.fetchone()
+            
+            if student:
+                # Get selected project details
+                query_project = """
+                    SELECT P.*, U.first_name, U.last_name, S.title as sup_title, Sel.status as sel_status
+                    FROM Project P
+                    JOIN Selection Sel ON P.project_id = Sel.project_id
+                    JOIN Supervisor S ON P.supervisor_id = S.supervisor_id
+                    JOIN User U ON S.user_id = U.user_id
+                    WHERE Sel.student_id = %s
+                """
+                cursor.execute(query_project, (student['student_id'],))
+                project = cursor.fetchone()
+                
+                if project:
+                    # Get tasks for this project
+                    cursor.execute("SELECT * FROM Task WHERE project_id = %s ORDER BY deadline", (project['project_id'],))
+                    tasks = cursor.fetchall()
+                    
+                    # Get evaluations for this student's submissions to these tasks
+                    query_evals = """
+                        SELECT E.grade, E.feedback, E.evaluation_date, T.title as task_title
+                        FROM Evaluation E
+                        JOIN Submission Sub ON E.submission_id = Sub.submission_id
+                        JOIN Task T ON Sub.task_id = T.task_id
+                        WHERE Sub.student_id = %s AND T.project_id = %s
+                        ORDER BY E.evaluation_date DESC
+                    """
+                    cursor.execute(query_evals, (student['student_id'], project['project_id']))
+                    evaluations = cursor.fetchall()
+            
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error fetching project detail: {err}")
+            
+    return render_template('student_project_detail.html', user=user, project=project, tasks=tasks, evaluations=evaluations)
 
 # --- Supervisor Routes ---
 @app.route('/supervisor_dashboard')

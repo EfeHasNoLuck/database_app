@@ -55,11 +55,6 @@
                 <span class="material-symbols-outlined">list_alt</span>
                 Projects
             </a>
-            <a href="#"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
-                <span class="material-symbols-outlined">school</span>
-                Grades
-            </a>
         </nav>
 
         <!-- User Profile -->
@@ -102,95 +97,56 @@
         <!-- Projects Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-            <!-- Project Card 1 -->
+            {% for project in projects %}
+            <!-- Project Card -->
             <div
-                class="bg-surface rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-                <div class="p-6 flex-1">
-                    <div class="flex justify-between items-start mb-3">
-                        <span
-                            class="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded uppercase tracking-wider">CS-401</span>
-                        <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                            <span class="material-symbols-outlined text-sm">person</span>
-                        </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">E-Commerce Microservices</h3>
-                    <p class="text-sm text-gray-500 mb-4 line-clamp-3">
-                        Design and implement a scalable e-commerce backend using microservices architecture with Docker
-                        and Kubernetes.
-                    </p>
-                    <div class="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                        <span class="material-symbols-outlined text-base">supervisor_account</span>
-                        <span>Prof. Alan Turing</span>
-                    </div>
-                </div>
-                <div class="p-4 border-t border-gray-100 bg-gray-50/50">
-                    <button
-                        class="w-full py-2 bg-white border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors">
-                        Select Project
-                    </button>
-                </div>
-            </div>
+                class="bg-surface rounded-xl border {% if project.project_id == selected_project_id %}border-2 border-primary{% else %}border-gray-200{% endif %} overflow-hidden hover:shadow-md transition-shadow flex flex-col relative">
 
-            <!-- Project Card 2 -->
-            <div
-                class="bg-surface rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
-                <div class="p-6 flex-1">
-                    <div class="flex justify-between items-start mb-3">
-                        <span
-                            class="px-2 py-1 bg-green-50 text-green-700 text-xs font-bold rounded uppercase tracking-wider">AI-302</span>
-                        <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
-                            <span class="material-symbols-outlined text-sm">person</span>
-                        </div>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Machine Learning for Healthcare</h3>
-                    <p class="text-sm text-gray-500 mb-4 line-clamp-3">
-                        Analyze medical datasets to predict patient readmission rates using various classification
-                        algorithms.
-                    </p>
-                    <div class="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                        <span class="material-symbols-outlined text-base">supervisor_account</span>
-                        <span>Dr. Grace Hopper</span>
-                    </div>
-                </div>
-                <div class="p-4 border-t border-gray-100 bg-gray-50/50">
-                    <button
-                        class="w-full py-2 bg-white border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors">
-                        Select Project
-                    </button>
-                </div>
-            </div>
-
-            <!-- Project Card 3 (Selected Example) -->
-            <div
-                class="bg-surface rounded-xl border-2 border-primary overflow-hidden hover:shadow-md transition-shadow flex flex-col relative">
+                {% if project.project_id == selected_project_id %}
                 <div class="absolute top-0 right-0 bg-primary text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
                     Selected
                 </div>
+                {% endif %}
+
                 <div class="p-6 flex-1">
                     <div class="flex justify-between items-start mb-3">
                         <span
-                            class="px-2 py-1 bg-purple-50 text-purple-700 text-xs font-bold rounded uppercase tracking-wider">DB-500</span>
+                            class="px-2 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded uppercase tracking-wider">PROJ-{{
+                            project.project_id }}</span>
                         <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
                             <span class="material-symbols-outlined text-sm">person</span>
                         </div>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-900 mb-2">Database Systems Implementation</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">{{ project.title }}</h3>
                     <p class="text-sm text-gray-500 mb-4 line-clamp-3">
-                        Build a core database engine capable of handling basic SQL queries, indexing, and transaction
-                        management.
+                        {{ project.description }}
                     </p>
                     <div class="flex items-center gap-2 text-sm text-gray-600 mb-4">
                         <span class="material-symbols-outlined text-base">supervisor_account</span>
-                        <span>Prof. Ada Lovelace</span>
+                        <span>{{ project.sup_title }} {{ project.first_name }} {{ project.last_name }}</span>
                     </div>
                 </div>
                 <div class="p-4 border-t border-gray-100 bg-gray-50/50">
+                    {% if project.project_id == selected_project_id %}
                     <a href="{{ url_for('student_project_detail') }}"
                         class="block text-center w-full py-2 bg-primary text-white font-bold rounded-lg hover:bg-blue-700 transition-colors">
                         Go to Project
                     </a>
+                    {% else %}
+                    <button
+                        class="w-full py-2 bg-white border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors">
+                        Select Project
+                    </button>
+                    {% endif %}
                 </div>
             </div>
+            {% endfor %}
+
+            {% if not projects %}
+            <div class="col-span-full text-center py-12">
+                <p class="text-gray-500">No projects available at the moment.</p>
+            </div>
+            {% endif %}
 
         </div>
     </main>

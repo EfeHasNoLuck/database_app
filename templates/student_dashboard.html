@@ -55,11 +55,6 @@
                 <span class="material-symbols-outlined">list_alt</span>
                 Projects
             </a>
-            <a href="#"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
-                <span class="material-symbols-outlined">school</span>
-                Grades
-            </a>
         </nav>
 
         <!-- User Profile -->
@@ -96,20 +91,33 @@
         <!-- Stats Overview -->
         <div class="mb-8">
             <!-- Active Project Card -->
+            {% if active_project %}
             <div class="bg-surface p-6 rounded-xl shadow-sm border border-gray-100">
                 <div class="flex items-start justify-between mb-4">
                     <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
                         <span class="material-symbols-outlined">folder_open</span>
                     </div>
-                    <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">Active</span>
+                    <span class="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full capitalize">{{
+                        active_project.status }}</span>
                 </div>
                 <h3 class="text-lg font-bold text-gray-900 mb-1">Current Project</h3>
-                <p class="text-gray-500 text-sm mb-4">Database Systems Implementation</p>
+                <p class="text-gray-500 text-sm mb-4">{{ active_project.title }}</p>
                 <a href="{{ url_for('student_project_detail') }}"
                     class="text-primary text-sm font-semibold hover:underline flex items-center gap-1">
                     View Details <span class="material-symbols-outlined text-sm">arrow_forward</span>
                 </a>
             </div>
+            {% else %}
+            <div class="bg-surface p-6 rounded-xl shadow-sm border border-gray-100 text-center">
+                <div class="mb-3 text-gray-400">
+                    <span class="material-symbols-outlined text-4xl">folder_off</span>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-2">No Active Project</h3>
+                <p class="text-gray-500 text-sm mb-4">You haven't started any project yet.</p>
+                <a href="{{ url_for('student_projects') }}" class="text-primary font-bold hover:underline">Browse
+                    Projects</a>
+            </div>
+            {% endif %}
         </div>
 
         <!-- Recent Activity -->
@@ -121,26 +129,24 @@
                     Recent Activity
                 </h2>
                 <div class="space-y-4">
+                    {% for activity in activities %}
                     <div class="flex gap-4">
                         <div
                             class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0">
-                            <span class="material-symbols-outlined text-sm">upload_file</span>
+                            <span class="material-symbols-outlined text-sm">{{ activity.icon }}</span>
                         </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-900">Uploaded "Draft_v1.pdf"</p>
-                            <p class="text-xs text-gray-500">2 hours ago</p>
+                            <p class="text-sm font-medium text-gray-900">{{ activity.text }}</p>
+                            <p class="text-xs text-gray-500">{{ activity.time }}</p>
                         </div>
                     </div>
-                    <div class="flex gap-4">
-                        <div
-                            class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0">
-                            <span class="material-symbols-outlined text-sm">check_circle</span>
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-900">Project "DB Systems" Approved</p>
-                            <p class="text-xs text-gray-500">Yesterday</p>
-                        </div>
+                    {% endfor %}
+
+                    {% if not activities %}
+                    <div class="text-center py-4">
+                        <p class="text-gray-500 text-sm">No recent activity.</p>
                     </div>
+                    {% endif %}
                 </div>
             </section>
         </div>
