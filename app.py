@@ -86,13 +86,16 @@ def register():
 
                 # 2. Create Role Specific Entry
                 if role == 'student':
+                    department = request.form.get('department')
                     # Generate a dummy student no for demo
                     student_no = f"S{user_id:05d}" 
-                    query_student = "INSERT INTO Student (user_id, student_no) VALUES (%s, %s)"
-                    cursor.execute(query_student, (user_id, student_no))
+                    query_student = "INSERT INTO Student (user_id, student_no, department) VALUES (%s, %s, %s)"
+                    cursor.execute(query_student, (user_id, student_no, department))
                 elif role == 'supervisor':
-                    query_supervisor = "INSERT INTO Supervisor (user_id, title) VALUES (%s, 'Prof.')"
-                    cursor.execute(query_supervisor, (user_id,))
+                    title = request.form.get('title')
+                    expertise = request.form.get('expertise')
+                    query_supervisor = "INSERT INTO Supervisor (user_id, title, expertise) VALUES (%s, %s, %s)"
+                    cursor.execute(query_supervisor, (user_id, title, expertise))
                 
                 conn.commit()
                 cursor.close()

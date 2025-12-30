@@ -153,7 +153,7 @@
                         <span class="text-text-main-light dark:text-text-main-dark text-sm font-semibold">Select
                             Role</span>
                         <div class="relative">
-                            <select name="role" required
+                            <select name="role" required id="roleSelect" onchange="toggleFields()"
                                 class="w-full rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark h-14 px-4 text-text-main-light dark:text-white focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none appearance-none cursor-pointer transition-all">
                                 <option disabled="" selected="" value="">Select your account type</option>
                                 <option value="student">Student Researcher</option>
@@ -166,6 +166,74 @@
                             </div>
                         </div>
                     </label>
+
+                    <!-- Student Specific Fields -->
+                    <div id="studentFields" class="hidden">
+                        <label class="flex flex-col gap-2">
+                            <span
+                                class="text-text-main-light dark:text-text-main-dark text-sm font-semibold">Department</span>
+                            <div class="relative">
+                                <input
+                                    class="w-full rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark h-14 px-4 text-text-main-light dark:text-white placeholder:text-text-sub-light dark:placeholder:text-text-sub-dark focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+                                    placeholder="Computer Engineering" type="text" name="department" />
+                                <div
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-text-sub-light dark:text-text-sub-dark pointer-events-none flex items-center">
+                                    <span class="material-symbols-outlined text-[20px]">domain</span>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Supervisor Specific Fields -->
+                    <div id="supervisorFields" class="hidden flex-col gap-5">
+                        <label class="flex flex-col gap-2">
+                            <span class="text-text-main-light dark:text-text-main-dark text-sm font-semibold">Job
+                                Title</span>
+                            <div class="relative">
+                                <input
+                                    class="w-full rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark h-14 px-4 text-text-main-light dark:text-white placeholder:text-text-sub-light dark:placeholder:text-text-sub-dark focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+                                    placeholder="Associate Professor" type="text" name="title" />
+                                <div
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-text-sub-light dark:text-text-sub-dark pointer-events-none flex items-center">
+                                    <span class="material-symbols-outlined text-[20px]">badge</span>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="flex flex-col gap-2">
+                            <span
+                                class="text-text-main-light dark:text-text-main-dark text-sm font-semibold">Expertise</span>
+                            <div class="relative">
+                                <input
+                                    class="w-full rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark h-14 px-4 text-text-main-light dark:text-white placeholder:text-text-sub-light dark:placeholder:text-text-sub-dark focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+                                    placeholder="Data Science, AI" type="text" name="expertise" />
+                                <div
+                                    class="absolute right-4 top-1/2 -translate-y-1/2 text-text-sub-light dark:text-text-sub-dark pointer-events-none flex items-center">
+                                    <span class="material-symbols-outlined text-[20px]">psychology</span>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <script>
+                        function toggleFields() {
+                            const role = document.getElementById('roleSelect').value;
+                            const studentFields = document.getElementById('studentFields');
+                            const supervisorFields = document.getElementById('supervisorFields');
+
+                            studentFields.classList.add('hidden');
+                            supervisorFields.classList.add('hidden');
+                            if (supervisorFields.classList.contains('flex')) {
+                                supervisorFields.classList.remove('flex');
+                            }
+
+                            if (role === 'student') {
+                                studentFields.classList.remove('hidden');
+                            } else if (role === 'supervisor') {
+                                supervisorFields.classList.remove('hidden');
+                                supervisorFields.classList.add('flex');
+                            }
+                        }
+                    </script>
                     <label class="flex flex-col gap-2">
                         <span
                             class="text-text-main-light dark:text-text-main-dark text-sm font-semibold">Password</span>
