@@ -389,6 +389,51 @@ def supervisor_create_project():
              
     return render_template('supervisor_create_project.html')
 
+
+@app.route('/create_task', methods=['POST'])
+def create_task():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    project_id = request.form.get('project_id')
+    title = request.form.get('title')
+    deadline = request.form.get('deadline')
+    instruction = request.form.get('instruction')
+    
+    conn = get_db_connection()
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            
+            # 1. Verify Supervisor Ownership
+            cursor.execute("SELECT supervisor_id FROM Supervisor WHERE user_id = %s", (session['user_id'],))
+            supervisor = cursor.fetchone()
+            
+            if supervisor:
+                # Check if project belongs to this supervisor
+                cursor.execute("SELECT project_id FROM Project WHERE project_id = %s AND supervisor_id = %s", 
+                               (project_id, supervisor['supervisor_id']))
+                project = cursor.fetchone()
+                
+                if project:
+                    # 2. Create Task
+                    query = "INSERT INTO Task (project_id, title, instruction, deadline) VALUES (%s, %s, %s, %s)"
+                    cursor.execute(query, (project_id, title, instruction, deadline))
+                    conn.commit()
+                    flash(f"Task '{title}' created successfully!")
+                else:
+                    flash("Project not found or access denied.")
+            else:
+                flash("Supervisor profile not found.")
+                
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error creating task: {err}")
+            flash(f"Error creating task: {err}")
+    
+    return redirect(url_for('supervisor_project_detail', project_id=project_id))
+
 @app.route('/supervisor_project_detail/<int:project_id>')
 def supervisor_project_detail(project_id):
     if 'user_id' not in session:
