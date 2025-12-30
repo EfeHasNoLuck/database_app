@@ -819,3 +819,66 @@ def admin_users():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
+def get_db_connection():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="aps_db"
+    )
+
+@app.route("/admin/dashboard")
+def admin_dashboard():
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Dashboard counts
+    cursor.execute("SELECT COUNT(*) AS count FROM Student")
+    students = cursor.fetchone()["count"]
+
+    cursor.execute("SELECT COUNT(*) AS count FROM Supervisor")
+    supervisors = cursor.fetchone()["count"]
+
+    cursor.execute("SELECT COUNT(*) AS count FROM Project WHERE status='active'")
+    projects = cursor.fetchone()["count"]
+
+    cursor.execute("SELECT COUNT(*) AS count FROM Submission")
+    submissions = cursor.fetchone()["count"]
+
+    # Activity logs
+    cursor.execute("""
+        SELECT 
+            CONCAT(u.first_name, ' ', u.last_name) AS full_name,
+            u.role,
+            a.description,
+            a.timestamp
+        FROM Activity_Log a
+        LEFT JOIN User u ON a.user_id = u.user_id
+        ORDER BY a.timestamp DESC
+        LIMIT 10
+    """)
+    logs = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "admin_dashboard.html",
+        students=students,
+        supervisors=supervisors,
+        projects=projects,
+        submissions=submissions,
+        logs=logs
+    )
+
+def log_activity(user_id, action_type, description):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO Activity_Log (user_id, action_type, description)
+        VALUES (%s, %s, %s)
+    """, (user_id, action_type, description))
+    conn.commit()
+    cursor.close()
+    conn.close()

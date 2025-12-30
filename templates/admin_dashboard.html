@@ -107,8 +107,9 @@
                         <span class="material-symbols-outlined">school</span>
                     </div>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-900">1,240</h3>
-                <p class="text-gray-500 text-sm">Active Students</p>
+                <h3 class="text-2xl font-bold text-gray-900">{{ students }}</h3>
+                 <p class="text-gray-500 text-sm">Active Students</p>
+
             </div>
 
             <!-- Total Supervisors -->
@@ -118,8 +119,9 @@
                         <span class="material-symbols-outlined">supervisor_account</span>
                     </div>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-900">85</h3>
-                <p class="text-gray-500 text-sm">Supervisors</p>
+                <h3 class="text-2xl font-bold text-gray-900">{{ supervisors }}</h3>
+                <p class="text-gray-500 text-sm"> Supervisors </p>
+
             </div>
 
             <!-- Active Projects -->
@@ -129,8 +131,9 @@
                         <span class="material-symbols-outlined">folder</span>
                     </div>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-900">312</h3>
-                <p class="text-gray-500 text-sm">Active Projects</p>
+                <h3 class="text-2xl font-bold text-gray-900">{{ projects }}</h3>
+                <p class="text-gray-500 text-sm"> Active Projects </p>
+
             </div>
 
             <!-- Total Submissions -->
@@ -140,8 +143,9 @@
                         <span class="material-symbols-outlined">upload_file</span>
                     </div>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-900">4,502</h3>
+                <h3 class="text-2xl font-bold text-gray-900">{{ submissions }}</h3>
                 <p class="text-gray-500 text-sm">File Submissions</p>
+
             </div>
         </div>
 
@@ -215,41 +219,42 @@
                             <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">Add New
                                 User</span>
                         </button>
-                        <button
-                            class="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-primary transition-all group flex items-center gap-3">
-                            <div
-                                class="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center group-hover:bg-green-600 group-hover:text-white transition-colors">
-                                <span class="material-symbols-outlined text-lg">create_new_folder</span>
-                            </div>
-                            <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">Create Project
-                                Shell</span>
-                        </button>
-                        <button
-                            class="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-primary transition-all group flex items-center gap-3">
-                            <div
-                                class="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                                <span class="material-symbols-outlined text-lg">announcement</span>
-                            </div>
-                            <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">Global
-                                Announcement</span>
-                        </button>
                     </div>
                 </section>
 
-                <section class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl shadow-md p-6 text-white">
-                    <div class="flex items-center gap-2 opacity-80 mb-2">
-                        <span class="material-symbols-outlined">dns</span>
-                        <span class="text-xs font-bold uppercase tracking-wider">System Status</span>
-                    </div>
-                    <h3 class="text-xl font-bold mb-1">All Systems Operational</h3>
-                    <p class="text-white/70 text-sm mb-4">Database: Online | Storage: 45% Used</p>
-                    <div class="h-1 bg-white/20 rounded-full overflow-hidden">
-                        <div class="h-full bg-green-400 w-full"></div>
-                    </div>
-                </section>
+
             </div>
         </div>
     </main>
 </body>
+
+<div class="divide-y divide-gray-50">
+    {% for log in logs %}
+    <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
+        <div class="col-span-3 font-medium text-gray-900 text-sm">
+            {{ log.full_name or "Unknown User" }}
+        </div>
+
+        <div class="col-span-2 text-xs">
+            {% if log.role == 'student' %}
+                <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded-full font-bold">Student</span>
+            {% elif log.role == 'supervisor' %}
+                <span class="px-2 py-1 bg-purple-50 text-purple-700 rounded-full font-bold">Supervisor</span>
+            {% elif log.role == 'admin' %}
+                <span class="px-2 py-1 bg-red-50 text-red-700 rounded-full font-bold">Admin</span>
+            {% endif %}
+        </div>
+
+        <div class="col-span-4 text-sm text-gray-600">
+            {{ log.description }}
+        </div>
+
+        <div class="col-span-3 text-right text-xs text-gray-500">
+            {{ log.timestamp.strftime('%d %b %Y %H:%M') }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
 
 </html>
