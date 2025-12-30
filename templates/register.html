@@ -238,10 +238,10 @@
                         <span
                             class="text-text-main-light dark:text-text-main-dark text-sm font-semibold">Password</span>
                         <div class="relative flex w-full items-stretch rounded-lg">
-                            <input
+                            <input id="passwordInput"
                                 class="flex-1 rounded-l-lg rounded-r-none bg-surface-light dark:bg-surface-dark border border-r-0 border-border-light dark:border-border-dark h-14 px-4 text-text-main-light dark:text-white placeholder:text-text-sub-light dark:placeholder:text-text-sub-dark focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all z-10"
                                 placeholder="Create a password" type="password" name="password" required />
-                            <button
+                            <button id="togglePasswordBtn"
                                 class="flex items-center justify-center px-4 rounded-r-lg bg-surface-light dark:bg-surface-dark border border-l-0 border-border-light dark:border-border-dark text-text-sub-light dark:text-text-sub-dark hover:text-primary transition-colors cursor-pointer"
                                 type="button">
                                 <span class="material-symbols-outlined">visibility</span>
@@ -265,6 +265,17 @@
         </div>
     </div>
 
+    <script>
+        const passwordInput = document.getElementById('passwordInput');
+        const togglePasswordBtn = document.getElementById('togglePasswordBtn');
+        const toggleIcon = togglePasswordBtn.querySelector('span');
+
+        togglePasswordBtn.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            toggleIcon.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+        });
+    </script>
 </body>
 
 </html>
