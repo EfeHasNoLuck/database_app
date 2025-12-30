@@ -141,6 +141,24 @@
                         details to access the dashboard.</p>
                 </div>
                 <!-- Form Fields -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                {% if category == 'auth_error' %}
+                <div
+                    class="flex items-center w-full p-3 mb-6 rounded-lg bg-red-50 border border-red-100 dark:bg-red-900/10 dark:border-red-900/30 shadow-sm transition-all duration-300">
+                    <div
+                        class="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                        <span class="material-symbols-outlined text-[20px]">priority_high</span>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-red-800 dark:text-red-300">{{ message }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+                {% endwith %}
                 <form class="flex flex-col gap-5" action="/login" method="POST">
                     <!-- Email Field -->
                     <label class="flex flex-col gap-2">
@@ -173,6 +191,20 @@
                                 <span class="material-symbols-outlined">expand_more</span>
                             </div>
                         </div>
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                        {% for category, message in messages %}
+                        {% if category == 'role_error' %}
+                        <div class="flex items-center gap-1.5 mt-1">
+                            <span
+                                class="material-symbols-outlined text-red-600 dark:text-red-400 text-[18px]">error</span>
+                            <span class="text-xs text-red-600 dark:text-red-400 font-medium animate-pulse">{{ message
+                                }}</span>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        {% endif %}
+                        {% endwith %}
                     </label>
                     <!-- Password Field -->
                     <label class="flex flex-col gap-2">

@@ -41,26 +41,37 @@ def login():
                  print(f"Login Error: {err}") # Log error for debugging
 
         if user:
-            # Login Success
-            session['user_id'] = user['user_id']
-            session['user_email'] = user['email']
-            session['role'] = user['role']
-            session['first_name'] = user['first_name']
-            
-            # Check if the role selected in form matches the actual user role logic (optional, but good for UX)
-            # For now, we trust the DB role and redirect based on it.
+            # Check if role matches
             db_role = user['role']
             
-            if db_role == 'student':
-                return redirect(url_for('student_dashboard'))
-            elif db_role == 'supervisor':
-                return redirect(url_for('supervisor_dashboard'))
-            elif db_role == 'admin':
-                return redirect(url_for('admin_dashboard'))
+            # Role translation for messages
+            role_map = {
+                'student': 'Student',
+                'supervisor': 'Supervisor',
+                'admin': 'Administrator'
+            }
+            
+            if db_role != role:
+                db_role_str = role_map.get(db_role, db_role)
+                role_str = role_map.get(role, role)
+                flash(f"This email belongs to a {db_role_str} account. You cannot login as {role_str}.", 'role_error')
             else:
-                 flash(f'Unknown role: {db_role}')
+                # Login Success
+                session['user_id'] = user['user_id']
+                session['user_email'] = user['email']
+                session['role'] = user['role']
+                session['first_name'] = user['first_name']
+                
+                if db_role == 'student':
+                    return redirect(url_for('student_dashboard'))
+                elif db_role == 'supervisor':
+                    return redirect(url_for('supervisor_dashboard'))
+                elif db_role == 'admin':
+                    return redirect(url_for('admin_dashboard'))
+                else:
+                    flash(f'Unknown role: {db_role}', 'role_error')
         else:
-            flash('Invalid email or password')
+            flash('Invalid email or password', 'auth_error')
     
     return render_template('login.html')
 
