@@ -55,16 +55,12 @@
                 <span class="material-symbols-outlined">folder_managed</span>
                 My Projects
             </a>
-            <a href="#"
+            <a href="{{ url_for('supervisor_evaluations') }}"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                 <span class="material-symbols-outlined">fact_check</span>
                 Evaluations
             </a>
-            <a href="#"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
-                <span class="material-symbols-outlined">schedule</span>
-                Deadlines
-            </a>
+
         </nav>
 
         <!-- User Profile (Supervisor) -->
@@ -99,7 +95,7 @@
         </header>
 
         <!-- Stats Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <!-- Total Projects -->
             <div class="bg-surface p-6 rounded-xl shadow-sm border border-gray-100">
                 <div class="flex items-start justify-between mb-4">
@@ -121,19 +117,6 @@
                 <h3 class="text-2xl font-bold text-gray-900">12 Students</h3>
                 <p class="text-gray-500 text-sm">Currently Supervised</p>
             </div>
-
-            <!-- Pending Reviews -->
-            <div class="bg-surface p-6 rounded-xl shadow-sm border border-gray-100">
-                <div class="flex items-start justify-between mb-4">
-                    <div class="p-2 bg-orange-50 text-orange-600 rounded-lg">
-                        <span class="material-symbols-outlined">rate_review</span>
-                    </div>
-                    <span class="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">Action
-                        Required</span>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-900">5 Pending</h3>
-                <p class="text-gray-500 text-sm">Submissions to Grade</p>
-            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -150,65 +133,34 @@
                     </div>
 
                     <div class="divide-y divide-gray-50">
-                        <!-- Submission Item 1 -->
+                        {% if pending_submissions %}
+                        {% for sub in pending_submissions %}
+                        <!-- Submission Item -->
                         <div class="p-6 hover:bg-gray-50 transition-colors flex items-center justify-between">
                             <div class="flex items-start gap-4">
                                 <div
                                     class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 font-bold text-sm">
-                                    JS</div>
+                                    {{ sub.first_name[0] }}{{ sub.last_name[0] }}</div>
                                 <div>
-                                    <h4 class="text-sm font-bold text-gray-900">John Smith</h4>
-                                    <p class="text-xs text-gray-500 mb-1">Database Systems Implementation</p>
-                                    <p class="text-sm text-gray-700">submitted <span class="font-medium">Task 1: ER
-                                            Diagram</span></p>
+                                    <h4 class="text-sm font-bold text-gray-900">{{ sub.first_name }} {{ sub.last_name }}
+                                    </h4>
+                                    <p class="text-xs text-gray-500 mb-1">{{ sub.project_title }}</p>
+                                    <p class="text-sm text-gray-700">submitted <span class="font-medium">{{
+                                            sub.task_title }}</span></p>
                                 </div>
                             </div>
                             <div class="flex flex-col items-end gap-2">
-                                <span class="text-xs text-gray-400">Oct 23, 10:30 AM</span>
-                                <a href="{{ url_for('supervisor_evaluation') }}"
+                                <span class="text-xs text-gray-400">{{ sub.submission_date }}</span>
+                                <a href="{{ url_for('supervisor_evaluation', submission_id=sub.submission_id) }}"
                                     class="px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition">Evaluate</a>
                             </div>
                         </div>
-
-                        <!-- Submission Item 2 -->
-                        <div class="p-6 hover:bg-gray-50 transition-colors flex items-center justify-between">
-                            <div class="flex items-start gap-4">
-                                <div
-                                    class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shrink-0 font-bold text-sm">
-                                    ED</div>
-                                <div>
-                                    <h4 class="text-sm font-bold text-gray-900">Emma Davis</h4>
-                                    <p class="text-xs text-gray-500 mb-1">Machine Learning for Healthcare</p>
-                                    <p class="text-sm text-gray-700">submitted <span class="font-medium">Model Training
-                                            Report</span></p>
-                                </div>
-                            </div>
-                            <div class="flex flex-col items-end gap-2">
-                                <span class="text-xs text-text-muted text-red-500 font-medium">Late Submission</span>
-                                <a href="supervisor_evaluation.html"
-                                    class="px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition">Evaluate</a>
-                            </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="p-6 text-center text-gray-500">
+                            No pending evaluations.
                         </div>
-
-                        <!-- Submission Item 3 -->
-                        <div class="p-6 hover:bg-gray-50 transition-colors flex items-center justify-between">
-                            <div class="flex items-start gap-4">
-                                <div
-                                    class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0 font-bold text-sm">
-                                    MR</div>
-                                <div>
-                                    <h4 class="text-sm font-bold text-gray-900">Michael Ross</h4>
-                                    <p class="text-xs text-gray-500 mb-1">E-Commerce Microservices</p>
-                                    <p class="text-sm text-gray-700">submitted <span class="font-medium">API
-                                            Documentation</span></p>
-                                </div>
-                            </div>
-                            <div class="flex flex-col items-end gap-2">
-                                <span class="text-xs text-gray-400">Yesterday</span>
-                                <a href="supervisor_evaluation.html"
-                                    class="px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition">Evaluate</a>
-                            </div>
-                        </div>
+                        {% endif %}
                     </div>
                 </section>
             </div>

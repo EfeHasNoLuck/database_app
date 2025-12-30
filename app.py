@@ -283,15 +283,132 @@ def student_project_detail():
 # --- Supervisor Routes ---
 @app.route('/supervisor_dashboard')
 def supervisor_dashboard():
-    return render_template('supervisor_dashboard.html')
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    user = get_user_info(session['user_id'])
+    conn = get_db_connection()
+    pending_submissions = []
+    
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            # Fetch pending submissions for projects supervised by this user
+            query = """
+                SELECT Sub.*, T.title as task_title, P.title as project_title, 
+                       U.first_name, U.last_name, S.student_no
+                FROM Submission Sub
+                JOIN Task T ON Sub.task_id = T.task_id
+                JOIN Project P ON T.project_id = P.project_id
+                JOIN Supervisor Sup ON P.supervisor_id = Sup.supervisor_id
+                JOIN Student S ON Sub.student_id = S.student_id
+                JOIN User U ON S.user_id = U.user_id
+                LEFT JOIN Evaluation E ON Sub.submission_id = E.submission_id
+                WHERE Sup.user_id = %s AND E.evaluation_id IS NULL
+                ORDER BY Sub.submission_date ASC
+            """
+            cursor.execute(query, (session['user_id'],))
+            pending_submissions = cursor.fetchall()
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error fetching supervisor dashboard: {err}")
+            
+    return render_template('supervisor_dashboard.html', user=user, pending_submissions=pending_submissions)
 
 @app.route('/supervisor_project_detail')
 def supervisor_project_detail():
+    # Placeholder for project detail logic
     return render_template('supervisor_project_detail.html')
 
-@app.route('/supervisor_evaluation')
-def supervisor_evaluation():
-    return render_template('supervisor_evaluation.html')
+@app.route('/supervisor_evaluation/<int:submission_id>', methods=['GET', 'POST'])
+def supervisor_evaluation(submission_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    if request.method == 'POST':
+        grade = request.form.get('grade')
+        feedback = request.form.get('feedback')
+        
+        if conn:
+            try:
+                cursor = conn.cursor()
+                query = "INSERT INTO Evaluation (submission_id, grade, feedback) VALUES (%s, %s, %s)"
+                cursor.execute(query, (submission_id, grade, feedback))
+                conn.commit()
+                cursor.close()
+                conn.close()
+                flash('Evaluation submitted successfully!')
+                return redirect(url_for('supervisor_dashboard'))
+            except mysql.connector.Error as err:
+                print(f"Error submitting evaluation: {err}")
+                flash(f"Error: {err}")
+    
+    # GET request: Show form
+    submission = None
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            query = """
+                SELECT Sub.*, T.title as task_title, P.title as project_title, 
+                       U.first_name, U.last_name, S.student_no, Sup.user_id as supervisor_user_id
+                FROM Submission Sub
+                JOIN Task T ON Sub.task_id = T.task_id
+                JOIN Project P ON T.project_id = P.project_id
+                JOIN Supervisor Sup ON P.supervisor_id = Sup.supervisor_id
+                JOIN Student S ON Sub.student_id = S.student_id
+                JOIN User U ON S.user_id = U.user_id
+                WHERE Sub.submission_id = %s
+            """
+            cursor.execute(query, (submission_id,))
+            submission = cursor.fetchone()
+            cursor.close()
+            conn.close()
+            
+            # Security check: Ensure the logged-in supervisor owns this project
+            if submission and submission['supervisor_user_id'] != session.get('user_id'):
+                 flash("You do not have permission to evaluate this submission.")
+                 return redirect(url_for('supervisor_dashboard'))
+                 
+        except mysql.connector.Error as err:
+            print(f"Error fetching submission for evaluation: {err}")
+
+    return render_template('supervisor_evaluation.html', submission=submission)
+
+@app.route('/supervisor_evaluations')
+def supervisor_evaluations():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    pending_submissions = []
+    
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            # Fetch pending submissions only
+            query = """
+                SELECT Sub.*, T.title as task_title, P.title as project_title, 
+                       U.first_name, U.last_name, S.student_no, Sup.user_id as supervisor_user_id
+                FROM Submission Sub
+                JOIN Task T ON Sub.task_id = T.task_id
+                JOIN Project P ON T.project_id = P.project_id
+                JOIN Supervisor Sup ON P.supervisor_id = Sup.supervisor_id
+                JOIN Student S ON Sub.student_id = S.student_id
+                JOIN User U ON S.user_id = U.user_id
+                LEFT JOIN Evaluation E ON Sub.submission_id = E.submission_id
+                WHERE Sup.user_id = %s AND E.evaluation_id IS NULL
+                ORDER BY Sub.submission_date ASC
+            """
+            cursor.execute(query, (session['user_id'],))
+            pending_submissions = cursor.fetchall()
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error fetching evaluations list: {err}")
+            
+    return render_template('supervisor_evaluations.html', pending_submissions=pending_submissions)
 
 # --- Admin Routes ---
 @app.route('/admin_dashboard')
