@@ -584,6 +584,52 @@ def create_task():
     
     return redirect(url_for('supervisor_project_detail', project_id=project_id))
 
+@app.route('/delete_task', methods=['POST'])
+def delete_task():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    task_id = request.form.get('task_id')
+    project_id = request.form.get('project_id')
+
+    conn = get_db_connection()
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            
+            # Verify Supervisor Ownership
+            cursor.execute("SELECT supervisor_id FROM Supervisor WHERE user_id = %s", (session['user_id'],))
+            supervisor = cursor.fetchone()
+
+            if supervisor:
+                # Check ownership
+                query_check = """
+                    SELECT T.task_id 
+                    FROM Task T
+                    JOIN Project P ON T.project_id = P.project_id
+                    WHERE T.task_id = %s AND P.supervisor_id = %s
+                """
+                cursor.execute(query_check, (task_id, supervisor['supervisor_id']))
+                task = cursor.fetchone()
+
+                if task:
+                    # Delete Task
+                    cursor.execute("DELETE FROM Task WHERE task_id = %s", (task_id,))
+                    conn.commit()
+                    flash('Task deleted successfully!')
+                else:
+                    flash('Task not found or access denied.')
+            else:
+                flash('Supervisor profile not found.')
+
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error deleting task: {err}")
+            flash(f"Error deleting task: cannot delete if there are submissions.")
+    
+    return redirect(url_for('supervisor_project_detail', project_id=project_id) if project_id else url_for('supervisor_dashboard'))
+
 @app.route('/supervisor_project_detail/<int:project_id>')
 def supervisor_project_detail(project_id):
     if 'user_id' not in session:

@@ -55,11 +55,7 @@
                 <span class="material-symbols-outlined">folder_managed</span>
                 My Projects
             </a>
-            <a href="{{ url_for('supervisor_evaluations') }}"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
-                <span class="material-symbols-outlined">fact_check</span>
-                Evaluations
-            </a>
+
 
         </nav>
 
@@ -151,14 +147,15 @@
                             <p class="text-sm text-gray-500 mb-2">Due: {{ task.deadline }}</p>
                             <p class="text-sm text-gray-600 line-clamp-2">{{ task.instruction }}</p>
                         </div>
-                        <div class="flex flex-col gap-2">
-                            <button class="text-gray-400 hover:text-primary transition-colors">
-                                <span class="material-symbols-outlined">edit</span>
-                            </button>
-                            <button class="text-gray-400 hover:text-red-500 transition-colors">
+                        <form action="{{ url_for('delete_task') }}" method="POST"
+                            onsubmit="return confirm('Are you sure you want to delete this task?');"
+                            style="display:inline;">
+                            <input type="hidden" name="task_id" value="{{ task.task_id }}">
+                            <input type="hidden" name="project_id" value="{{ project.project_id }}">
+                            <button type="submit" class="text-gray-400 hover:text-red-500 transition-colors">
                                 <span class="material-symbols-outlined">delete</span>
                             </button>
-                        </div>
+                        </form>
                     </div>
                     {% endfor %}
                     {% else %}
