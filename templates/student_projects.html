@@ -133,10 +133,13 @@
                         Go to Project
                     </a>
                     {% else %}
-                    <button
-                        class="w-full py-2 bg-white border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors">
-                        Select Project
-                    </button>
+                    <form action="{{ url_for('select_project') }}" method="POST">
+                        <input type="hidden" name="project_id" value="{{ project.project_id }}">
+                        <button type="submit"
+                            class="w-full py-2 bg-white border border-primary text-primary font-bold rounded-lg hover:bg-primary hover:text-white transition-colors">
+                            Select Project
+                        </button>
+                    </form>
                     {% endif %}
                 </div>
             </div>

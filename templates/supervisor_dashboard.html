@@ -163,6 +163,51 @@
                         {% endif %}
                     </div>
                 </section>
+                </section>
+
+                <!-- Recent Evaluations List -->
+                <section class="bg-surface rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                        <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-gray-400">fact_check</span>
+                            Recent Evaluations
+                        </h2>
+                    </div>
+
+                    <div class="divide-y divide-gray-50">
+                        {% if completed_evaluations %}
+                        {% for eval in completed_evaluations %}
+                        <!-- Evaluation Item -->
+                        <div class="p-6 hover:bg-gray-50 transition-colors flex items-center justify-between">
+                            <div class="flex items-start gap-4">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0 font-bold text-sm">
+                                    {{ eval.first_name[0] }}{{ eval.last_name[0] }}</div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-gray-900">{{ eval.first_name }} {{ eval.last_name
+                                        }}
+                                    </h4>
+                                    <p class="text-xs text-gray-500 mb-1">{{ eval.project_title }}</p>
+                                    <p class="text-sm text-gray-700">Grade: <span
+                                            class="font-bold {{ 'text-green-600' if eval.grade >= 50 else 'text-red-500' }}">{{
+                                            eval.grade }}</span> for {{ eval.task_title }}</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="text-xs text-gray-400">{{ eval.evaluation_date }}</span>
+                                <span class="text-xs text-green-600 font-bold flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-sm">check_circle</span> Evaluated
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="p-6 text-center text-gray-500">
+                            No recent evaluations.
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
             </div>
 
             <!-- Right Column: My Projects Overview -->

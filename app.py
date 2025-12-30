@@ -141,10 +141,11 @@ def student_dashboard():
             student = cursor.fetchone()
             if student:
                 query_project = """
-                    SELECT P.title, P.status
+                    SELECT P.title, Sel.status as status
                     FROM Project P
                     JOIN Selection Sel ON P.project_id = Sel.project_id
-                    WHERE Sel.student_id = %s AND Sel.status = 'approved'
+                    WHERE Sel.student_id = %s AND Sel.status IN ('approved', 'pending')
+                    ORDER BY Sel.selection_id DESC LIMIT 1
                 """
                 cursor.execute(query_project, (student['student_id'],))
                 active_project = cursor.fetchone()
@@ -225,6 +226,44 @@ def student_projects():
             
     return render_template('student_projects.html', user=user, projects=projects, selected_project_id=selected_project_id)
 
+@app.route('/select_project', methods=['POST'])
+def select_project():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    project_id = request.form.get('project_id')
+    conn = get_db_connection()
+    
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            
+            # Get Student ID
+            cursor.execute("SELECT student_id FROM Student WHERE user_id = %s", (session['user_id'],))
+            student = cursor.fetchone()
+            
+            if student:
+                # Check if already selected a project
+                cursor.execute("SELECT selection_id FROM Selection WHERE student_id = %s", (student['student_id'],))
+                existing_selection = cursor.fetchone()
+                
+                if existing_selection:
+                    flash("You have already selected a project.")
+                else:
+                    # Create Selection
+                    query = "INSERT INTO Selection (student_id, project_id, status) VALUES (%s, %s, 'pending')"
+                    cursor.execute(query, (student['student_id'], project_id))
+                    conn.commit()
+                    flash("Project selected successfully! Waiting for supervisor approval.")
+            
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error selecting project: {err}")
+            flash(f"Error: {err}")
+            
+    return redirect(url_for('student_projects'))
+
 @app.route('/student_project_detail')
 def student_project_detail():
     if 'user_id' not in session:
@@ -257,8 +296,15 @@ def student_project_detail():
                 project = cursor.fetchone()
                 
                 if project:
-                    # Get tasks for this project
-                    cursor.execute("SELECT * FROM Task WHERE project_id = %s ORDER BY deadline", (project['project_id'],))
+                    # Get tasks with submission status
+                    query_tasks = """
+                        SELECT T.*, Sub.submission_id, Sub.file_path, Sub.submission_date
+                        FROM Task T
+                        LEFT JOIN Submission Sub ON T.task_id = Sub.task_id AND Sub.student_id = %s
+                        WHERE T.project_id = %s 
+                        ORDER BY T.deadline
+                    """
+                    cursor.execute(query_tasks, (student['student_id'], project['project_id']))
                     tasks = cursor.fetchall()
                     
                     # Get evaluations for this student's submissions to these tasks
@@ -279,6 +325,76 @@ def student_project_detail():
             print(f"Error fetching project detail: {err}")
             
     return render_template('student_project_detail.html', user=user, project=project, tasks=tasks, evaluations=evaluations)
+
+from werkzeug.utils import secure_filename
+import os
+
+UPLOAD_FOLDER = 'static/uploads'
+# Ensure upload folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+@app.route('/submit_task', methods=['POST'])
+def submit_task():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    task_id = request.form.get('task_id')
+    
+    if 'file' not in request.files:
+        flash('No file part')
+        return redirect(request.referrer)
+        
+    file = request.files['file']
+    
+    if file.filename == '':
+        flash('No selected file')
+        return redirect(request.referrer)
+        
+    if file:
+        filename = secure_filename(file.filename)
+        # Append timestamp or user_id to filename to avoid collisions? keeping simple for now.
+        save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(save_path)
+        
+        conn = get_db_connection()
+        if conn:
+            try:
+                cursor = conn.cursor(dictionary=True)
+                cursor.execute("SELECT student_id FROM Student WHERE user_id = %s", (session['user_id'],))
+                student = cursor.fetchone()
+                
+                if student:
+                    # Insert submission
+                    # Note: You might want to check if submission already exists and UPDATE it instead, 
+                    # OR allow multiple submissions. Schema doesn't enforce unique task_id per student, 
+                    # but logic might imply one. I'll stick to INSERT for now, or update if exists?
+                    # Let's check first.
+                    
+                    cursor.execute("SELECT submission_id FROM Submission WHERE student_id = %s AND task_id = %s", 
+                                   (student['student_id'], task_id))
+                    existing = cursor.fetchone()
+                    
+                    if existing:
+                        # Update existing
+                        query = "UPDATE Submission SET file_path = %s, submission_date = NOW() WHERE submission_id = %s"
+                        cursor.execute(query, (filename, existing['submission_id']))
+                        flash('Submission updated successfully!')
+                    else:
+                        # Insert new
+                        query = "INSERT INTO Submission (task_id, student_id, file_path) VALUES (%s, %s, %s)"
+                        cursor.execute(query, (task_id, student['student_id'], filename))
+                        flash('Task submitted successfully!')
+                        
+                    conn.commit()
+                
+                cursor.close()
+                conn.close()
+            except mysql.connector.Error as err:
+                print(f"Error submitting task: {err}")
+                flash(f"Error: {err}")
+                
+    return redirect(url_for('student_project_detail'))
 
 # --- Supervisor Routes ---
 @app.route('/supervisor_dashboard')
@@ -345,12 +461,31 @@ def supervisor_dashboard():
             cursor.execute(query_subs, (session['user_id'],))
             pending_submissions = cursor.fetchall()
             
+            # 4. Completed Evaluations (Recent 5)
+            query_evals = """
+                SELECT Sub.*, T.title as task_title, P.title as project_title,
+                       U.first_name, U.last_name, S.student_no,
+                       E.grade, E.feedback, E.evaluation_date
+                FROM Submission Sub
+                JOIN Task T ON Sub.task_id = T.task_id
+                JOIN Project P ON T.project_id = P.project_id
+                JOIN Supervisor Sup ON P.supervisor_id = Sup.supervisor_id
+                JOIN Student S ON Sub.student_id = S.student_id
+                JOIN User U ON S.user_id = U.user_id
+                JOIN Evaluation E ON Sub.submission_id = E.submission_id
+                WHERE Sup.user_id = %s
+                ORDER BY E.evaluation_date DESC LIMIT 5
+            """
+            cursor.execute(query_evals, (session['user_id'],))
+            completed_evaluations = cursor.fetchall()
+            
             cursor.close()
             conn.close()
         except mysql.connector.Error as err:
             print(f"Error fetching supervisor dashboard: {err}")
             
     return render_template('supervisor_dashboard.html', user=user, pending_submissions=pending_submissions, 
+                           completed_evaluations=completed_evaluations,
                            project_count=project_count, student_count=student_count, projects=projects)
 
 @app.route('/supervisor_create_project', methods=['GET', 'POST'])
