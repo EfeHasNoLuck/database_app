@@ -63,15 +63,15 @@
 
         </nav>
 
-        <!-- User Profile (Supervisor) -->
+        <!-- User Profile -->
         <div class="p-4 border-t border-gray-100">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                    <span class="material-symbols-outlined">supervisor_account</span>
+                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                    <span class="material-symbols-outlined">person</span>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-gray-900 truncate">Prof. Ada Lovelace</p>
-                    <p class="text-xs text-gray-500 truncate">Supervisor</p>
+                    <p class="text-sm font-bold text-gray-900 truncate">{{ user.first_name }} {{ user.last_name }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
                 </div>
                 <a href="{{ url_for('login') }}" class="text-gray-400 hover:text-red-500 transition-colors">
                     <span class="material-symbols-outlined">logout</span>

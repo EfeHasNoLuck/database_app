@@ -492,7 +492,8 @@ def supervisor_dashboard():
 def supervisor_create_project():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-
+        
+    user = get_user_info(session['user_id'])
     conn = get_db_connection()
     if request.method == 'POST':
         title = request.form.get('title')
@@ -522,7 +523,7 @@ def supervisor_create_project():
         else:
              flash("Database connection failed")
              
-    return render_template('supervisor_create_project.html')
+    return render_template('supervisor_create_project.html', user=user)
 
 
 @app.route('/create_task', methods=['POST'])
@@ -573,7 +574,8 @@ def create_task():
 def supervisor_project_detail(project_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+        
+    user = get_user_info(session['user_id'])
     conn = get_db_connection()
     project = None
     tasks = []
@@ -619,13 +621,14 @@ def supervisor_project_detail(project_id):
              print(f"Error fetching project detail: {err}")
              flash(f"Error: {err}")
              
-    return render_template('supervisor_project_detail.html', project=project, tasks=tasks, students=students)
+    return render_template('supervisor_project_detail.html', user=user, project=project, tasks=tasks, students=students)
 
 @app.route('/supervisor_projects')
 def supervisor_projects():
     if 'user_id' not in session:
         return redirect(url_for('login'))
         
+    user = get_user_info(session['user_id'])
     conn = get_db_connection()
     projects = []
     
@@ -652,13 +655,14 @@ def supervisor_projects():
         except mysql.connector.Error as err:
             print(f"Error fetching projects list: {err}")
             
-    return render_template('supervisor_projects.html', projects=projects)
+    return render_template('supervisor_projects.html', user=user, projects=projects)
 
 @app.route('/supervisor_evaluation/<int:submission_id>', methods=['GET', 'POST'])
 def supervisor_evaluation(submission_id):
     if 'user_id' not in session:
         return redirect(url_for('login'))
         
+    user = get_user_info(session['user_id'])    
     conn = get_db_connection()
     if request.method == 'POST':
         grade = request.form.get('grade')
@@ -707,13 +711,14 @@ def supervisor_evaluation(submission_id):
         except mysql.connector.Error as err:
             print(f"Error fetching submission for evaluation: {err}")
 
-    return render_template('supervisor_evaluation.html', submission=submission)
+    return render_template('supervisor_evaluation.html', user=user, submission=submission)
 
 @app.route('/supervisor_evaluations')
 def supervisor_evaluations():
     if 'user_id' not in session:
         return redirect(url_for('login'))
         
+    user = get_user_info(session['user_id'])
     conn = get_db_connection()
     pending_submissions = []
     
@@ -741,7 +746,7 @@ def supervisor_evaluations():
         except mysql.connector.Error as err:
             print(f"Error fetching evaluations list: {err}")
             
-    return render_template('supervisor_evaluations.html', pending_submissions=pending_submissions)
+    return render_template('supervisor_evaluations.html', user=user, pending_submissions=pending_submissions)
 
 # --- Admin Routes ---
 @app.route('/admin_dashboard')
