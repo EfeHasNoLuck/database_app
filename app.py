@@ -289,12 +289,47 @@ def supervisor_dashboard():
     user = get_user_info(session['user_id'])
     conn = get_db_connection()
     pending_submissions = []
+    project_count = 0
+    student_count = 0
+    projects = []
     
     if conn:
         try:
             cursor = conn.cursor(dictionary=True)
-            # Fetch pending submissions for projects supervised by this user
-            query = """
+            
+            # Fetch Supervisor ID
+            cursor.execute("SELECT supervisor_id FROM Supervisor WHERE user_id = %s", (session['user_id'],))
+            supervisor_data = cursor.fetchone()
+            
+            if supervisor_data:
+                supervisor_id = supervisor_data['supervisor_id']
+                
+                # 1. Project Count & List
+                cursor.execute("""
+                    SELECT project_id, title, status, description 
+                    FROM Project 
+                    WHERE supervisor_id = %s
+                """, (supervisor_id,))
+                projects = cursor.fetchall()
+                project_count = len(projects)
+                
+                # 2. Student Count (Distinct students selected in these projects)
+                # Assuming 'approved' selections count as active students
+                if projects:
+                   project_ids = [str(p['project_id']) for p in projects]
+                   placeholders = ','.join(['%s'] * len(project_ids))
+                   query_students = f"""
+                       SELECT COUNT(DISTINCT student_id) as cnt 
+                       FROM Selection 
+                       WHERE project_id IN ({placeholders}) AND status = 'approved'
+                   """
+                   cursor.execute(query_students, tuple(project_ids))
+                   res = cursor.fetchone()
+                   student_count = res['cnt'] if res else 0
+
+            # 3. Pending Submissions (Same as before)
+            # Note: The query joins Supervisor table and filters by user_id so it's safe even without explicit supervisor_id above
+            query_subs = """
                 SELECT Sub.*, T.title as task_title, P.title as project_title, 
                        U.first_name, U.last_name, S.student_no
                 FROM Submission Sub
@@ -307,19 +342,137 @@ def supervisor_dashboard():
                 WHERE Sup.user_id = %s AND E.evaluation_id IS NULL
                 ORDER BY Sub.submission_date ASC
             """
-            cursor.execute(query, (session['user_id'],))
+            cursor.execute(query_subs, (session['user_id'],))
             pending_submissions = cursor.fetchall()
+            
             cursor.close()
             conn.close()
         except mysql.connector.Error as err:
             print(f"Error fetching supervisor dashboard: {err}")
             
-    return render_template('supervisor_dashboard.html', user=user, pending_submissions=pending_submissions)
+    return render_template('supervisor_dashboard.html', user=user, pending_submissions=pending_submissions, 
+                           project_count=project_count, student_count=student_count, projects=projects)
 
-@app.route('/supervisor_project_detail')
-def supervisor_project_detail():
-    # Placeholder for project detail logic
-    return render_template('supervisor_project_detail.html')
+@app.route('/supervisor_create_project', methods=['GET', 'POST'])
+def supervisor_create_project():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        
+        if conn:
+            try:
+                cursor = conn.cursor(dictionary=True)
+                # Get Supervisor ID
+                cursor.execute("SELECT supervisor_id FROM Supervisor WHERE user_id = %s", (session['user_id'],))
+                supervisor = cursor.fetchone()
+                
+                if supervisor:
+                    query = "INSERT INTO Project (title, description, status, supervisor_id) VALUES (%s, %s, 'active', %s)"
+                    cursor.execute(query, (title, description, supervisor['supervisor_id']))
+                    conn.commit()
+                    flash(f"Project '{title}' created successfully!")
+                    cursor.close()
+                    conn.close()
+                    return redirect(url_for('supervisor_dashboard'))
+                else:
+                    flash("Supervisor profile not found.")
+                    
+            except mysql.connector.Error as err:
+                print(f"Error creating project: {err}")
+                flash(f"Error creating project: {err}")
+        else:
+             flash("Database connection failed")
+             
+    return render_template('supervisor_create_project.html')
+
+@app.route('/supervisor_project_detail/<int:project_id>')
+def supervisor_project_detail(project_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    project = None
+    tasks = []
+    students = []
+    
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            
+            # 1. Fetch Project Details & Verify Ownership
+            # Join with Supervisor to check user_id
+            query_proj = """
+                SELECT P.*, S.title as sup_title
+                FROM Project P
+                JOIN Supervisor S ON P.supervisor_id = S.supervisor_id
+                WHERE P.project_id = %s AND S.user_id = %s
+            """
+            cursor.execute(query_proj, (project_id, session['user_id']))
+            project = cursor.fetchone()
+            
+            if not project:
+                flash("Project not found or access denied.")
+                return redirect(url_for('supervisor_projects'))
+                
+            # 2. Fetch Tasks
+            cursor.execute("SELECT * FROM Task WHERE project_id = %s ORDER BY deadline", (project_id,))
+            tasks = cursor.fetchall()
+            
+            # 3. Fetch Enrolled Students
+            query_students = """
+                SELECT S.student_no, U.first_name, U.last_name, U.email
+                FROM Selection Sel
+                JOIN Student S ON Sel.student_id = S.student_id
+                JOIN User U ON S.user_id = U.user_id
+                WHERE Sel.project_id = %s AND Sel.status = 'approved'
+            """
+            cursor.execute(query_students, (project_id,))
+            students = cursor.fetchall()
+            
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+             print(f"Error fetching project detail: {err}")
+             flash(f"Error: {err}")
+             
+    return render_template('supervisor_project_detail.html', project=project, tasks=tasks, students=students)
+
+@app.route('/supervisor_projects')
+def supervisor_projects():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    projects = []
+    
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT supervisor_id FROM Supervisor WHERE user_id = %s", (session['user_id'],))
+            sup = cursor.fetchone()
+            
+            if sup:
+                # Fetch projects with student counts and task counts
+                query = """
+                    SELECT P.*, 
+                           (SELECT COUNT(*) FROM Selection WHERE project_id = P.project_id AND status='approved') as student_count,
+                           (SELECT COUNT(*) FROM Task WHERE project_id = P.project_id) as task_count
+                    FROM Project P
+                    WHERE P.supervisor_id = %s
+                """
+                cursor.execute(query, (sup['supervisor_id'],))
+                projects = cursor.fetchall()
+                
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error fetching projects list: {err}")
+            
+    return render_template('supervisor_projects.html', projects=projects)
 
 @app.route('/supervisor_evaluation/<int:submission_id>', methods=['GET', 'POST'])
 def supervisor_evaluation(submission_id):

@@ -50,7 +50,7 @@
                 <span class="material-symbols-outlined">dashboard</span>
                 Dashboard
             </a>
-            <a href="{{ url_for('supervisor_project_detail') }}"
+            <a href="{{ url_for('supervisor_projects') }}"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium">
                 <span class="material-symbols-outlined">folder_managed</span>
                 My Projects
@@ -86,7 +86,7 @@
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
             <a href="{{ url_for('supervisor_dashboard') }}" class="hover:text-primary">Dashboard</a>
             <span>/</span>
-            <span class="text-gray-900 font-medium">Database Systems Implementation</span>
+            <span class="text-gray-900 font-medium">{{ project.title }}</span>
         </div>
 
         <!-- Project Header -->
@@ -96,7 +96,7 @@
             </div>
             <div class="relative z-10">
                 <div class="flex justify-between items-start mb-4">
-                    <h1 class="text-3xl font-bold text-gray-900">Database Systems Implementation</h1>
+                    <h1 class="text-3xl font-bold text-gray-900">{{ project.title }}</h1>
                     <div class="flex gap-2">
                         <button
                             class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 flex items-center gap-2">
@@ -105,25 +105,23 @@
                     </div>
                 </div>
                 <p class="text-gray-600 max-w-3xl mb-6">
-                    Build a core database engine capable of handling basic SQL queries, indexing, and transaction
-                    management.
-                    This course project focuses on the internals of RDBMS.
+                    {{ project.description }}
                 </p>
                 <div class="flex flex-wrap gap-4 text-sm">
                     <div
                         class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg text-gray-700 border border-gray-200">
                         <span class="material-symbols-outlined text-lg text-gray-500">category</span>
-                        CS-401
+                        CS-Project
                     </div>
                     <div
                         class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg text-gray-700 border border-gray-200">
                         <span class="material-symbols-outlined text-lg text-gray-500">group</span>
-                        4 Students Enrolled
+                        {{ students|length }} Students Enrolled
                     </div>
                     <div
-                        class="flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-lg text-green-700 border border-green-200 font-medium">
+                        class="flex items-center gap-2 {{ 'bg-green-50 text-green-700 border-green-200' if project.status == 'active' else 'bg-gray-50 text-gray-700 border-gray-200' }} px-3 py-1.5 rounded-lg border font-medium">
                         <span class="material-symbols-outlined text-lg">check_circle</span>
-                        Active Status
+                        {{ project.status|capitalize }} Status
                     </div>
                 </div>
             </div>
@@ -142,18 +140,19 @@
                 </div>
 
                 <div class="space-y-4">
-                    <!-- Task Item 1 -->
+                    {% if tasks %}
+                    {% for task in tasks %}
+                    <!-- Task Item -->
                     <div
                         class="bg-surface rounded-xl border border-gray-200 p-6 flex justify-between items-start hover:shadow-md transition-shadow">
                         <div>
                             <div class="flex items-center gap-3 mb-1">
-                                <h3 class="text-lg font-bold text-gray-900">Task 1: ER Diagram Design</h3>
+                                <h3 class="text-lg font-bold text-gray-900">{{ task.title }}</h3>
                                 <span
                                     class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded">Active</span>
                             </div>
-                            <p class="text-sm text-gray-500 mb-2">Due: Oct 24, 2023</p>
-                            <p class="text-sm text-gray-600 line-clamp-2">Create a normalized Entity-Relationship
-                                diagram for the proposed system...</p>
+                            <p class="text-sm text-gray-500 mb-2">Due: {{ task.deadline }}</p>
+                            <p class="text-sm text-gray-600 line-clamp-2">{{ task.instruction }}</p>
                         </div>
                         <div class="flex flex-col gap-2">
                             <button class="text-gray-400 hover:text-primary transition-colors">
@@ -164,29 +163,10 @@
                             </button>
                         </div>
                     </div>
-
-                    <!-- Task Item 2 -->
-                    <div
-                        class="bg-surface rounded-xl border border-gray-200 p-6 flex justify-between items-start hover:shadow-md transition-shadow">
-                        <div>
-                            <div class="flex items-center gap-3 mb-1">
-                                <h3 class="text-lg font-bold text-gray-900">Task 2: SQL Implementation</h3>
-                                <span
-                                    class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-bold rounded">Locked</span>
-                            </div>
-                            <p class="text-sm text-gray-500 mb-2">Due: Nov 10, 2023</p>
-                            <p class="text-sm text-gray-600 line-clamp-2">Implement the database schema using SQL DDL
-                                commands...</p>
-                        </div>
-                        <div class="flex flex-col gap-2">
-                            <button class="text-gray-400 hover:text-primary transition-colors">
-                                <span class="material-symbols-outlined">edit</span>
-                            </button>
-                            <button class="text-gray-400 hover:text-red-500 transition-colors">
-                                <span class="material-symbols-outlined">delete</span>
-                            </button>
-                        </div>
-                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-gray-500 italic">No tasks created yet.</p>
+                    {% endif %}
                 </div>
             </div>
 
@@ -195,43 +175,30 @@
                 <h2 class="text-xl font-bold text-gray-900 border-b border-gray-200 pb-2">Enrolled Students</h2>
                 <div class="bg-surface rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                     <div class="divide-y divide-gray-100">
+                        {% if students %}
+                        {% for student in students %}
                         <div class="p-4 flex items-center gap-3 hover:bg-gray-50">
                             <div
                                 class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">
-                                JS</div>
+                                {{ student.first_name[0] }}{{ student.last_name[0] }}</div>
                             <div class="flex-1">
-                                <p class="text-sm font-bold text-gray-900">John Smith</p>
-                                <p class="text-xs text-gray-500">john.s@uni.edu</p>
+                                <p class="text-sm font-bold text-gray-900">{{ student.first_name }} {{ student.last_name
+                                    }}</p>
+                                <p class="text-xs text-gray-500">{{ student.email }}</p>
                             </div>
                             <button class="text-gray-300 hover:text-primary"><span
                                     class="material-symbols-outlined">mail</span></button>
                         </div>
-                        <div class="p-4 flex items-center gap-3 hover:bg-gray-50">
-                            <div
-                                class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-xs font-bold">
-                                AM</div>
-                            <div class="flex-1">
-                                <p class="text-sm font-bold text-gray-900">Alex Morgan</p>
-                                <p class="text-xs text-gray-500">alex.m@uni.edu</p>
-                            </div>
-                            <button class="text-gray-300 hover:text-primary"><span
-                                    class="material-symbols-outlined">mail</span></button>
-                        </div>
-                        <div class="p-4 flex items-center gap-3 hover:bg-gray-50">
-                            <div
-                                class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 text-xs font-bold">
-                                KL</div>
-                            <div class="flex-1">
-                                <p class="text-sm font-bold text-gray-900">Katie Lee</p>
-                                <p class="text-xs text-gray-500">katie.l@uni.edu</p>
-                            </div>
-                            <button class="text-gray-300 hover:text-primary"><span
-                                    class="material-symbols-outlined">mail</span></button>
-                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="p-4 text-center text-gray-500">No students enrolled.</div>
+                        {% endif %}
                     </div>
+                    {% if students %}
                     <div class="p-3 bg-gray-50 text-center border-t border-gray-100">
                         <button class="text-sm text-primary font-bold hover:underline">Manage Students</button>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
