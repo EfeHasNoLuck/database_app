@@ -22,6 +22,16 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # Redirect if already logged in
+    if 'user_id' in session:
+        role = session.get('role')
+        if role == 'student':
+            return redirect(url_for('student_dashboard'))
+        elif role == 'supervisor':
+            return redirect(url_for('supervisor_dashboard'))
+        elif role == 'admin':
+            return redirect(url_for('admin_dashboard'))
+
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
@@ -74,6 +84,12 @@ def login():
             flash('Invalid email or password', 'auth_error')
     
     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You have been logged out successfully.', 'info')
+    return redirect(url_for('login'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -168,6 +184,62 @@ def get_notifications(user_id):
             print(f"Error fetching notifications: {err}")
     return notifications
 
+def get_active_project(user_id):
+    conn = get_db_connection()
+    project = None
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            # Find student_id first
+            cursor.execute("SELECT student_id FROM Student WHERE user_id = %s", (user_id,))
+            student = cursor.fetchone()
+            
+            if student:
+                # Find approved project
+                query = """
+                    SELECT p.title, p.status, p.description 
+                    FROM Project p
+                    JOIN Selection s ON p.project_id = s.project_id
+                    WHERE s.student_id = %s AND s.status = 'approved' AND p.status = 'active'
+                    LIMIT 1
+                """
+                cursor.execute(query, (student['student_id'],))
+                project = cursor.fetchone()
+            
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error fetching project: {err}")
+    return project
+
+
+
+def get_active_project(user_id):
+    conn = get_db_connection()
+    project = None
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT student_id FROM Student WHERE user_id = %s", (user_id,))
+            student = cursor.fetchone()
+            
+            if student:
+                query = """
+                    SELECT p.title, p.status, p.description 
+                    FROM Project p
+                    JOIN Selection s ON p.project_id = s.project_id
+                    WHERE s.student_id = %s AND s.status = 'approved' AND p.status = 'active'
+                    LIMIT 1
+                """
+                cursor.execute(query, (student['student_id'],))
+                project = cursor.fetchone()
+            
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error fetching project: {err}")
+    return project
+
 @app.route('/mark_notifications_read', methods=['POST'])
 def mark_notifications_read():
     if 'user_id' not in session:
@@ -192,63 +264,18 @@ def student_dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
         
-    user = get_user_info(session['user_id'])
-    conn = get_db_connection()
-    active_project = None
-    activities = []
+    user_id = session['user_id']
+    user = get_user_info(user_id)
+    notifications = get_notifications(user_id)
+    active_project = get_active_project(user_id)
     
-    if conn:
-        try:
-            cursor = conn.cursor(dictionary=True)
-            # 1. Fetch Active Project
-            cursor.execute("SELECT student_id FROM Student WHERE user_id = %s", (session['user_id'],))
-            student = cursor.fetchone()
-            if student:
-                query_project = """
-                    SELECT P.title, Sel.status as status
-                    FROM Project P
-                    JOIN Selection Sel ON P.project_id = Sel.project_id
-                    WHERE Sel.student_id = %s AND Sel.status IN ('approved', 'pending')
-                    ORDER BY Sel.selection_id DESC LIMIT 1
-                """
-                cursor.execute(query_project, (student['student_id'],))
-                active_project = cursor.fetchone()
-                
-                # 2. Fetch Recent Activity (Mocking/Simulating from Submissions and Selection)
-                # In a real app, you might have a dedicated Activity_Log table or complex union query
-                # Here we'll just check for recent submissions and if they have a project selected
-                
-                # Selection Activity
-                cursor.execute("""
-                    SELECT 'check_circle' as icon, CONCAT('Project "', P.title, '" ', Sel.status) as text, Sel.status as type, 'Recently' as time
-                    FROM Selection Sel
-                    JOIN Project P ON Sel.project_id = P.project_id
-                    WHERE Sel.student_id = %s
-                    ORDER BY Sel.selection_id DESC LIMIT 1
-                """, (student['student_id'],))
-                selection_act = cursor.fetchone()
-                if selection_act:
-                    activities.append(selection_act)
-                    
-                # Submission Activity
-                cursor.execute("""
-                    SELECT 'upload_file' as icon, CONCAT('Submitted for "', T.title, '"') as text, 'submission' as type, S.submission_date as time
-                    FROM Submission S
-                    JOIN Task T ON S.task_id = T.task_id
-                    WHERE S.student_id = %s
-                    ORDER BY S.submission_date DESC LIMIT 5
-                """, (student['student_id'],))
-                submission_acts = cursor.fetchall()
-                for act in submission_acts:
-                    # Format time a bit if it's a datetime object, or let Jinja handle
-                    activities.append(act)
-                
-            cursor.close()
-            conn.close()
-        except mysql.connector.Error as err:
-            print(f"Error fetching dashboard data: {err}")
-            
-    return render_template('student_dashboard.html', user=user, active_project=active_project, activities=activities, notifications=get_notifications(session['user_id']))
+    # Mock activities
+    activities = [
+        {'icon': 'login', 'text': 'Logged in successfully', 'time': 'Just now'}
+    ]
+    
+    return render_template('student_dashboard.html', user=user, notifications=notifications, active_project=active_project, activities=activities)
+
 
 @app.route('/student_projects')
 def student_projects():
@@ -256,6 +283,7 @@ def student_projects():
         return redirect(url_for('login'))
         
     user = get_user_info(session['user_id'])
+    notifications = get_notifications(session['user_id'])
     conn = get_db_connection()
     projects = []
     selected_project_id = None
@@ -288,7 +316,7 @@ def student_projects():
         except mysql.connector.Error as err:
             print(f"Error fetching projects: {err}")
             
-    return render_template('student_projects.html', user=user, projects=projects, selected_project_id=selected_project_id)
+    return render_template('student_projects.html', user=user, projects=projects, selected_project_id=selected_project_id, notifications=notifications)
 
 @app.route('/select_project', methods=['POST'])
 def select_project():
@@ -334,6 +362,7 @@ def student_project_detail():
         return redirect(url_for('login'))
         
     user = get_user_info(session['user_id'])
+    notifications = get_notifications(session['user_id'])
     conn = get_db_connection()
     project = None
     tasks = []
@@ -388,7 +417,7 @@ def student_project_detail():
         except mysql.connector.Error as err:
             print(f"Error fetching project detail: {err}")
             
-    return render_template('student_project_detail.html', user=user, project=project, tasks=tasks, evaluations=evaluations)
+    return render_template('student_project_detail.html', user=user, project=project, tasks=tasks, evaluations=evaluations, notifications=notifications)
 
 from werkzeug.utils import secure_filename
 import os
