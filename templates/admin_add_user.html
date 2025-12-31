@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New User - APS Admin</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb', // Academic Blue
+                        secondary: '#475569',
+                        background: '#f8f9fa',
+                        surface: '#ffffff',
+                    },
+                    fontFamily: {
+                        sans: ['Be Vietnam Pro', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-background text-gray-800 font-sans min-h-screen flex items-center justify-center">
+
+    <div class="w-full max-w-md bg-surface p-8 rounded-2xl shadow-lg border border-gray-100">
+        <div class="mb-6 text-center">
+            <h1 class="text-2xl font-bold text-gray-900">Add New User</h1>
+            <p class="text-gray-500 text-sm">Create a new student or supervisor account.</p>
+        </div>
+
+        <form action="{{ url_for('admin_add_user') }}" method="POST" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                    <input type="text" name="first_name" required
+                        class="w-full rounded-lg border-gray-200 focus:ring-primary focus:border-primary">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                    <input type="text" name="last_name" required
+                        class="w-full rounded-lg border-gray-200 focus:ring-primary focus:border-primary">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <input type="email" name="email" required
+                    class="w-full rounded-lg border-gray-200 focus:ring-primary focus:border-primary">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" name="password" required
+                    class="w-full rounded-lg border-gray-200 focus:ring-primary focus:border-primary">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <select name="role" id="roleSelect" onchange="toggleFields()"
+                    class="w-full rounded-lg border-gray-200 focus:ring-primary focus:border-primary">
+                    <option value="student">Student</option>
+                    <option value="supervisor">Supervisor</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+
+            <!-- Student Fields -->
+            <div id="studentFields">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                <input type="text" name="department"
+                    class="w-full rounded-lg border-gray-200 focus:ring-primary focus:border-primary">
+            </div>
+
+            <!-- Supervisor Fields -->
+            <div id="supervisorFields" class="hidden space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                    <select name="title"
+                        class="w-full rounded-lg border-gray-200 focus:ring-primary focus:border-primary">
+                        <option value="Dr.">Dr.</option>
+                        <option value="Prof.">Prof.</option>
+                        <option value="Assoc. Prof.">Assoc. Prof.</option>
+                        <option value="Lecturer">Lecturer</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Expertise Area</label>
+                    <input type="text" name="expertise" placeholder="e.g. AI, Data Science"
+                        class="w-full rounded-lg border-gray-200 focus:ring-primary focus:border-primary">
+                </div>
+            </div>
+
+            <button type="submit"
+                class="w-full py-3 bg-primary text-white font-bold rounded-xl hover:bg-blue-600 transition shadow-lg shadow-blue-500/30">
+                Create User
+            </button>
+
+            <div class="text-center">
+                <a href="{{ url_for('admin_users') }}" class="text-sm text-gray-500 hover:text-gray-900">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function toggleFields() {
+            const role = document.getElementById('roleSelect').value;
+            const stuFields = document.getElementById('studentFields');
+            const supFields = document.getElementById('supervisorFields');
+
+            if (role === 'student') {
+                stuFields.classList.remove('hidden');
+                supFields.classList.add('hidden');
+            } else if (role === 'supervisor') {
+                stuFields.classList.add('hidden');
+                supFields.classList.remove('hidden');
+            } else {
+                stuFields.classList.add('hidden');
+                supFields.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -62,6 +62,9 @@ def login():
                 session['role'] = user['role']
                 session['first_name'] = user['first_name']
                 
+                # Log Login
+                log_activity(user['user_id'], 'login', 'User logged in')
+                
                 if db_role == 'student':
                     return redirect(url_for('student_dashboard'))
                 elif db_role == 'supervisor':
@@ -111,6 +114,10 @@ def register():
                 conn.commit()
                 cursor.close()
                 conn.close()
+                
+                # Log Registration (using the new user_id)
+                log_activity(user_id, 'register', f'New {role} registered')
+                
                 flash('Registration successful! Please login.')
                 return redirect(url_for('login'))
             except mysql.connector.Error as err:
@@ -149,6 +156,20 @@ def create_notification(user_id, message, type='info', link='#'):
             conn.close()
         except mysql.connector.Error as err:
             print(f"Error creating notification: {err}")
+
+# Helper to log activity
+def log_activity(user_id, action_type, description):
+    conn = get_db_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            query = "INSERT INTO Activity_Log (user_id, action_type, description) VALUES (%s, %s, %s)"
+            cursor.execute(query, (user_id, action_type, description))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error logging activity: {err}")
 
 # --- Student Routes ---
 @app.route('/student_dashboard')
@@ -296,6 +317,10 @@ def select_project():
                         create_notification(sup_user['user_id'], msg, 'info', url_for('supervisor_dashboard'))
                         
                     conn.commit()
+                    
+                    # Log Project Selection
+                    log_activity(session['user_id'], 'selection', f"Provided selection for project ID {project_id}")
+                    
                     flash("Project selected successfully! Waiting for supervisor approval.")
             
             cursor.close()
@@ -567,6 +592,10 @@ def supervisor_create_project():
                     query = "INSERT INTO Project (title, description, status, supervisor_id) VALUES (%s, %s, 'active', %s)"
                     cursor.execute(query, (title, description, supervisor['supervisor_id']))
                     conn.commit()
+                    
+                    # Log Project Creation
+                    log_activity(session['user_id'], 'create_project', f"Created project '{title}'")
+                    
                     flash(f"Project '{title}' created successfully!")
                     cursor.close()
                     conn.close()
@@ -626,6 +655,10 @@ def create_task():
                         create_notification(stu['user_id'], msg, 'info', url_for('student_project_detail'))
 
                     conn.commit()
+                    
+                    # Log Task Creation
+                    log_activity(session['user_id'], 'create_task', f"Created task '{title}' for project {project_id}")
+                    
                     flash(f"Task '{title}' created successfully!")
                 else:
                     flash("Project not found or access denied.")
@@ -672,6 +705,10 @@ def delete_task():
                     # Delete Task
                     cursor.execute("DELETE FROM Task WHERE task_id = %s", (task_id,))
                     conn.commit()
+                    
+                    # Log Task Deletion
+                    log_activity(session['user_id'], 'delete_task', f"Deleted task {task_id}")
+                    
                     flash('Task deleted successfully!')
                 else:
                     flash('Task not found or access denied.')
@@ -805,6 +842,10 @@ def supervisor_evaluation(submission_id):
                     create_notification(stu_user['user_id'], msg, 'info', url_for('student_project_detail'))
                 
                 conn.commit()
+                
+                # Log Evaluation
+                log_activity(session['user_id'], 'evaluation', f"Evaluated submission {submission_id}")
+                
                 cursor.close()
                 conn.close()
                 flash('Evaluation submitted successfully!')
@@ -931,11 +972,230 @@ def mark_notifications_read():
 # --- Admin Routes ---
 @app.route('/admin_dashboard')
 def admin_dashboard():
-    return render_template('admin_dashboard.html')
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    stats = {
+        'students': 0,
+        'supervisors': 0,
+        'projects': 0
+    }
+    logs = []
+    
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            
+            # 1. Fetch Stats
+            cursor.execute("SELECT COUNT(*) as cnt FROM Student")
+            stats['students'] = cursor.fetchone()['cnt']
+            
+            cursor.execute("SELECT COUNT(*) as cnt FROM Supervisor")
+            stats['supervisors'] = cursor.fetchone()['cnt']
+            
+            cursor.execute("SELECT COUNT(*) as cnt FROM Project WHERE status = 'active'")
+            stats['projects'] = cursor.fetchone()['cnt']
+            
+            # 2. Fetch Recent Activity (Mocking from Activity_Log if exists, or just empty for now)
+            # Check if Activity_Log table exists and has data, otherwise we use the static placeholder or empty list
+            # Based on schema.sql, Activity_Log exists.
+            cursor.execute("""
+                SELECT A.description, A.timestamp, U.first_name, U.last_name, U.role
+                FROM Activity_Log A
+                LEFT JOIN User U ON A.user_id = U.user_id
+                ORDER BY A.timestamp DESC LIMIT 10
+            """)
+            logs = cursor.fetchall()
+            # Format logs full name
+            for log in logs:
+                if log['first_name'] and log['last_name']:
+                    log['full_name'] = f"{log['first_name']} {log['last_name']}"
+                else:
+                    log['full_name'] = "System"
+            
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error fetching admin stats: {err}")
+            
+    user = get_user_info(session['user_id'])
+    return render_template('admin_dashboard.html', students=stats['students'], 
+                           supervisors=stats['supervisors'], projects=stats['projects'], logs=logs, user=user)
 
 @app.route('/admin_users')
 def admin_users():
-    return render_template('admin_users.html')
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    users = []
+    
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            # Fetch all users
+            cursor.execute("SELECT * FROM User ORDER BY user_id DESC")
+            users = cursor.fetchall()
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error fetching users: {err}")
+            
+    user = get_user_info(session['user_id'])        
+    return render_template('admin_users.html', users=users, user=user)
+
+@app.route('/admin_add_user', methods=['GET', 'POST'])
+def admin_add_user():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return redirect(url_for('login'))
+        
+    if request.method == 'POST':
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        role = request.form.get('role')
+        
+        conn = get_db_connection()
+        if conn:
+            try:
+                cursor = conn.cursor()
+                
+                # Check if email exists
+                cursor.execute("SELECT user_id FROM User WHERE email = %s", (email,))
+                if cursor.fetchone():
+                    flash("Email already registered.", 'error')
+                    return redirect(url_for('admin_add_user'))
+                
+                # Create User
+                query_user = "INSERT INTO User (email, password, first_name, last_name, role) VALUES (%s, %s, %s, %s, %s)"
+                cursor.execute(query_user, (email, password, first_name, last_name, role))
+                user_id = cursor.lastrowid
+                
+                # Create Role Specific Entry
+                if role == 'student':
+                    department = request.form.get('department')
+                    student_no = f"S{user_id:05d}"
+                    query_student = "INSERT INTO Student (user_id, student_no, department) VALUES (%s, %s, %s)"
+                    cursor.execute(query_student, (user_id, student_no, department))
+                elif role == 'supervisor':
+                    title = request.form.get('title')
+                    expertise = request.form.get('expertise')
+                    query_supervisor = "INSERT INTO Supervisor (user_id, title, expertise) VALUES (%s, %s, %s)"
+                    cursor.execute(query_supervisor, (user_id, title, expertise))
+                
+                conn.commit()
+                
+                # Log Activity
+                log_activity(session['user_id'], 'admin_create_user', f"Admin created new user {email} ({role})")
+                
+                cursor.close()
+                conn.close()
+                flash(f"User {first_name} {last_name} created successfully!")
+                return redirect(url_for('admin_users'))
+                
+            except mysql.connector.Error as err:
+                print(f"Error adding user: {err}")
+                flash(f"Error: {err}", 'error')
+        
+    return render_template('admin_add_user.html')
+
+@app.route('/admin_delete_user/<int:user_id>', methods=['POST'])
+def admin_delete_user(user_id):
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM User WHERE user_id = %s", (user_id,))
+            conn.commit()
+            
+            log_activity(session['user_id'], 'admin_delete_user', f"Admin deleted user ID {user_id}")
+            
+            cursor.close()
+            conn.close()
+            flash('User deleted successfully.')
+        except mysql.connector.Error as err:
+            flash(f'Error deleting user: {err}', 'error')
+            
+    return redirect(url_for('admin_users'))
+
+@app.route('/admin_edit_user/<int:user_id>', methods=['GET', 'POST'])
+def admin_edit_user(user_id):
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    if request.method == 'POST':
+        first_name = request.form.get('first_name')
+        last_name = request.form.get('last_name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        
+        if conn:
+            try:
+                cursor = conn.cursor()
+                if password: # Update with password
+                    cursor.execute("UPDATE User SET first_name=%s, last_name=%s, email=%s, password=%s WHERE user_id=%s", 
+                                   (first_name, last_name, email, password, user_id))
+                else: # Update without password
+                    cursor.execute("UPDATE User SET first_name=%s, last_name=%s, email=%s WHERE user_id=%s", 
+                                   (first_name, last_name, email, user_id))
+                conn.commit()
+                
+                log_activity(session['user_id'], 'admin_edit_user', f"Admin edited user ID {user_id}")
+                
+                cursor.close()
+                conn.close()
+                flash('User updated successfully.')
+                return redirect(url_for('admin_users'))
+            except mysql.connector.Error as err:
+                 flash(f'Error updating user: {err}', 'error')
+    
+    # GET request - fetch user
+    user = None
+    if conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM User WHERE user_id = %s", (user_id,))
+        user = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+    return render_template('admin_edit_user.html', user=user)
+
+@app.route('/admin_projects')
+def admin_projects():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    projects = []
+    
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            # Fetch all projects with supervisor info
+            query = """
+                SELECT P.*, U.first_name, U.last_name, S.title as sup_title,
+                       (SELECT COUNT(*) FROM Selection WHERE project_id = P.project_id AND status IN ('approved', 'pending')) as student_count
+                FROM Project P
+                JOIN Supervisor S ON P.supervisor_id = S.supervisor_id
+                JOIN User U ON S.user_id = U.user_id
+                ORDER BY P.project_id DESC
+            """
+            cursor.execute(query)
+            projects = cursor.fetchall()
+            
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error fetching admin projects: {err}")
+            
+    user = get_user_info(session['user_id'])        
+    return render_template('admin_projects.html', projects=projects, user=user)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

@@ -55,22 +55,22 @@
                 <span class="material-symbols-outlined">manage_accounts</span>
                 User Management
             </a>
-            <a href="#"
+            <a href="{{ url_for('admin_projects') }}"
                 class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
                 <span class="material-symbols-outlined">folder_shared</span>
                 All Projects
             </a>
         </nav>
 
-        <!-- User Profile (Admin) -->
+        <!-- User Profile -->
         <div class="p-4 border-t border-gray-100">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
-                    <span class="material-symbols-outlined">admin_panel_settings</span>
+                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                    <span class="material-symbols-outlined">person</span>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p class="text-sm font-bold text-gray-900 truncate">System Admin</p>
-                    <p class="text-xs text-gray-500 truncate">Administrator</p>
+                    <p class="text-sm font-bold text-gray-900 truncate">{{ user.first_name }} {{ user.last_name }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
                 </div>
                 <a href="{{ url_for('login') }}" class="text-gray-400 hover:text-red-500 transition-colors">
                     <span class="material-symbols-outlined">logout</span>
@@ -87,14 +87,11 @@
                 <h1 class="text-2xl font-bold text-gray-900">System Overview</h1>
                 <p class="text-gray-500 text-sm">Monitor platform usage and recent activities.</p>
             </div>
-            <button class="relative p-2 text-gray-400 hover:text-primary transition-colors">
-                <span class="material-symbols-outlined">notifications</span>
-                <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+
         </header>
 
         <!-- Stats Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <!-- Total Students -->
             <div class="bg-surface p-6 rounded-xl shadow-sm border border-gray-100">
                 <div class="flex items-start justify-between mb-2">
@@ -103,7 +100,7 @@
                     </div>
                 </div>
                 <h3 class="text-2xl font-bold text-gray-900">{{ students }}</h3>
-                 <p class="text-gray-500 text-sm">Active Students</p>
+                <p class="text-gray-500 text-sm">Active Students</p>
 
             </div>
 
@@ -130,18 +127,6 @@
                 <p class="text-gray-500 text-sm"> Active Projects </p>
 
             </div>
-
-            <!-- Total Submissions -->
-            <div class="bg-surface p-6 rounded-xl shadow-sm border border-gray-100">
-                <div class="flex items-start justify-between mb-2">
-                    <div class="p-2 bg-orange-50 text-orange-600 rounded-lg">
-                        <span class="material-symbols-outlined">upload_file</span>
-                    </div>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-900">{{ submissions }}</h3>
-                <p class="text-gray-500 text-sm">File Submissions</p>
-
-            </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -153,7 +138,6 @@
                             <span class="material-symbols-outlined text-gray-400">history</span>
                             System Activity Log
                         </h2>
-                        <button class="text-sm text-primary font-medium hover:underline">Export Logs</button>
                     </div>
                     <!-- Table Header -->
                     <div
@@ -165,37 +149,28 @@
                     </div>
                     <!-- Log Items -->
                     <div class="divide-y divide-gray-50">
+                        {% for log in logs %}
                         <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
-                            <div class="col-span-3 font-medium text-gray-900 text-sm">John Smith</div>
-                            <div class="col-span-2 text-xs"><span
-                                    class="px-2 py-1 bg-blue-50 text-blue-700 rounded-full font-bold">Student</span>
-                            </div>
-                            <div class="col-span-4 text-sm text-gray-600">Submitted "Task 1: ER Diagram"</div>
-                            <div class="col-span-3 text-right text-xs text-gray-500">2 mins ago</div>
-                        </div>
-                        <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
-                            <div class="col-span-3 font-medium text-gray-900 text-sm">Prof. Ada Lovelace</div>
-                            <div class="col-span-2 text-xs"><span
+                            <div class="col-span-3 font-medium text-gray-900 text-sm">{{ log.full_name or "Unknown User"
+                                }}</div>
+                            <div class="col-span-2 text-xs">
+                                {% if log.role == 'student' %}
+                                <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded-full font-bold">Student</span>
+                                {% elif log.role == 'supervisor' %}
+                                <span
                                     class="px-2 py-1 bg-purple-50 text-purple-700 rounded-full font-bold">Supervisor</span>
+                                {% elif log.role == 'admin' %}
+                                <span class="px-2 py-1 bg-red-50 text-red-700 rounded-full font-bold">Admin</span>
+                                {% endif %}
                             </div>
-                            <div class="col-span-4 text-sm text-gray-600">Graded submission by Alex Morgan</div>
-                            <div class="col-span-3 text-right text-xs text-gray-500">15 mins ago</div>
+                            <div class="col-span-4 text-sm text-gray-600">{{ log.description }}</div>
+                            <div class="col-span-3 text-right text-xs text-gray-500">{{ log.timestamp }}</div>
                         </div>
-                        <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
-                            <div class="col-span-3 font-medium text-gray-900 text-sm">System Admin</div>
-                            <div class="col-span-2 text-xs"><span
-                                    class="px-2 py-1 bg-red-50 text-red-700 rounded-full font-bold">Admin</span></div>
-                            <div class="col-span-4 text-sm text-gray-600">Created new course project "CS-550"</div>
-                            <div class="col-span-3 text-right text-xs text-gray-500">1 hr ago</div>
-                        </div>
-                        <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
-                            <div class="col-span-3 font-medium text-gray-900 text-sm">Emma Davis</div>
-                            <div class="col-span-2 text-xs"><span
-                                    class="px-2 py-1 bg-blue-50 text-blue-700 rounded-full font-bold">Student</span>
-                            </div>
-                            <div class="col-span-4 text-sm text-gray-600">Registered for project "AI-302"</div>
-                            <div class="col-span-3 text-right text-xs text-gray-500">3 hrs ago</div>
-                        </div>
+                        {% endfor %}
+
+                        {% if not logs %}
+                        <div class="p-6 text-center text-gray-500 text-sm">No recent activity found.</div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -205,18 +180,18 @@
                 <section class="bg-surface rounded-xl shadow-sm border border-gray-100 p-6">
                     <h2 class="text-lg font-bold text-gray-900 mb-4">Quick Actions</h2>
                     <div class="space-y-3">
-<a href="{{ url_for('admin_users') }}"
-   class="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-primary transition-all group flex items-center gap-3">
+                        <a href="{{ url_for('admin_add_user') }}"
+                            class="w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-primary transition-all group flex items-center gap-3">
 
-    <div
-        class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-        <span class="material-symbols-outlined text-lg">person_add</span>
-    </div>
+                            <div
+                                class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                <span class="material-symbols-outlined text-lg">person_add</span>
+                            </div>
 
-    <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">
-        Add New User
-    </span>
-</a>
+                            <span class="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                                Add New User
+                            </span>
+                        </a>
 
                     </div>
                 </section>
@@ -227,33 +202,7 @@
     </main>
 </body>
 
-<div class="divide-y divide-gray-50">
-    {% for log in logs %}
-    <div class="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition-colors">
-        <div class="col-span-3 font-medium text-gray-900 text-sm">
-            {{ log.full_name or "Unknown User" }}
-        </div>
 
-        <div class="col-span-2 text-xs">
-            {% if log.role == 'student' %}
-                <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded-full font-bold">Student</span>
-            {% elif log.role == 'supervisor' %}
-                <span class="px-2 py-1 bg-purple-50 text-purple-700 rounded-full font-bold">Supervisor</span>
-            {% elif log.role == 'admin' %}
-                <span class="px-2 py-1 bg-red-50 text-red-700 rounded-full font-bold">Admin</span>
-            {% endif %}
-        </div>
-
-        <div class="col-span-4 text-sm text-gray-600">
-            {{ log.description }}
-        </div>
-
-        <div class="col-span-3 text-right text-xs text-gray-500">
-            {{ log.timestamp.strftime('%d %b %Y %H:%M') }}
-        </div>
-    </div>
-    {% endfor %}
-</div>
 
 
 </html>

@@ -123,19 +123,26 @@
                         network to manage your projects.</p>
                 </div>
                 <form class="flex flex-col gap-5" action="/register" method="POST">
-                    <label class="flex flex-col gap-2">
-                        <span class="text-text-main-light dark:text-text-main-dark text-sm font-semibold">Full
-                            Name</span>
-                        <div class="relative">
-                            <input
-                                class="w-full rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark h-14 px-4 text-text-main-light dark:text-white placeholder:text-text-sub-light dark:placeholder:text-text-sub-dark focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
-                                placeholder="John Doe" type="text" name="first_name" required />
-                            <div
-                                class="absolute right-4 top-1/2 -translate-y-1/2 text-text-sub-light dark:text-text-sub-dark pointer-events-none flex items-center">
-                                <span class="material-symbols-outlined text-[20px]">person</span>
+                    <div class="flex gap-4">
+                        <label class="flex flex-col gap-2 w-1/2">
+                            <span class="text-text-main-light dark:text-text-main-dark text-sm font-semibold">First
+                                Name</span>
+                            <div class="relative">
+                                <input
+                                    class="w-full rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark h-14 px-4 text-text-main-light dark:text-white placeholder:text-text-sub-light dark:placeholder:text-text-sub-dark focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+                                    placeholder="John" type="text" name="first_name" required />
                             </div>
-                        </div>
-                    </label>
+                        </label>
+                        <label class="flex flex-col gap-2 w-1/2">
+                            <span class="text-text-main-light dark:text-text-main-dark text-sm font-semibold">Last
+                                Name</span>
+                            <div class="relative">
+                                <input
+                                    class="w-full rounded-lg bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark h-14 px-4 text-text-main-light dark:text-white placeholder:text-text-sub-light dark:placeholder:text-text-sub-dark focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+                                    placeholder="Doe" type="text" name="last_name" required />
+                            </div>
+                        </label>
+                    </div>
                     <label class="flex flex-col gap-2">
                         <span class="text-text-main-light dark:text-text-main-dark text-sm font-semibold">University
                             Email</span>

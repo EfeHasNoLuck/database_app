@@ -131,18 +131,7 @@
                             <p class="text-xs text-gray-500">File: {{ task.file_path }} ({{ task.submission_date }})</p>
 
                             <!-- Optional: Allow re-submission? -->
-                            <details class="mt-2">
-                                <summary class="text-xs text-primary cursor-pointer hover:underline">Update Submission
-                                </summary>
-                                <form action="{{ url_for('submit_task') }}" method="POST" enctype="multipart/form-data"
-                                    class="mt-2 flex items-center gap-4">
-                                    <input type="hidden" name="task_id" value="{{ task.task_id }}">
-                                    <input type="file" name="file" required
-                                        class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                                    <button type="submit"
-                                        class="px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition">Update</button>
-                                </form>
-                            </details>
+                            <!-- Update submission option removed as requested -->
                         </div>
                         {% else %}
                         <form action="{{ url_for('submit_task') }}" method="POST" enctype="multipart/form-data">
