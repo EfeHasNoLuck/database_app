@@ -24,11 +24,47 @@
                     },
                     fontFamily: {
                         sans: ['Be Vietnam Pro', 'sans-serif'],
+                    },
+                    animation: {
+                        'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
+                        'bell-ring': 'bell-ring 4s ease-in-out infinite'
+                    },
+                    keyframes: {
+                        'shake': {
+                            '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+                            '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+                            '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+                            '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
+                        },
+                        'bell-ring': {
+                            '0%, 100%': { transform: 'rotate(0)' },
+                            '5%, 15%': { transform: 'rotate(15deg)' },
+                            '10%, 20%': { transform: 'rotate(-15deg)' },
+                            '25%': { transform: 'rotate(0)' }
+                        }
                     }
                 }
             }
         }
     </script>
+    <style>
+        .hover-scale {
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+
+        .sidebar-item-hover:hover {
+            transform: translateX(5px);
+        }
+
+        .notification-item:hover {
+            background-color: #f3f4f6;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body class="bg-background text-gray-800 font-sans min-h-screen flex">
@@ -47,17 +83,17 @@
         <!-- Navigation -->
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
             <a href="{{ url_for('admin_dashboard') }}"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium">
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium hover-scale sidebar-item-hover transition-all">
                 <span class="material-symbols-outlined">dashboard</span>
                 Overview
             </a>
             <a href="{{ url_for('admin_users') }}"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors hover-scale sidebar-item-hover transition-all">
                 <span class="material-symbols-outlined">manage_accounts</span>
                 User Management
             </a>
             <a href="#"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors hover-scale sidebar-item-hover transition-all">
                 <span class="material-symbols-outlined">folder_shared</span>
                 All Projects
             </a>
@@ -101,32 +137,35 @@
             <!-- Notification Dropdown -->
             <div class="relative">
                 <button onclick="document.getElementById('notification-dropdown').classList.toggle('hidden')"
-                    class="relative p-2 text-gray-400 hover:text-primary transition-colors focus:outline-none">
-                    <span class="material-symbols-outlined">notifications</span>
+                    class="relative p-2 text-gray-400 hover:text-primary transition-colors focus:outline-none hover-scale">
+                    <span
+                        class="material-symbols-outlined {{ 'animate-bell-ring text-primary' if notifications and notifications|selectattr('is_read', 'equalto', 0)|list|length > 0 }}">notifications</span>
                     {% if notifications and notifications|selectattr("is_read", "equalto", 0)|list|length > 0 %}
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
                     <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
                     {% endif %}
                 </button>
                 <!-- Notification Dropdown -->
                 <div id="notification-dropdown"
-                    class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 hidden z-50 transform origin-top-right">
+                    class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 hidden z-50 transform origin-top-right transition-all duration-200">
                     <div class="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-xl">
                         <h3 class="font-bold text-gray-900 text-sm">Notifications</h3>
                         <span id="mark-read-btn"
-                            class="text-xs text-primary cursor-pointer hover:underline font-medium">Mark all as
+                            class="text-xs text-primary cursor-pointer hover:underline font-medium hover-scale">Mark all
+                            as
                             read</span>
                     </div>
                     <div class="max-h-64 overflow-y-auto" id="notification-list">
                         {% if notifications %}
                         {% for note in notifications %}
-                        <div
-                            class="p-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 notification-item">
+                        <a href="{{ note.related_link or '#' }}"
+                            class="block p-3 border-b border-gray-50 last:border-0 notification-item transition-all duration-200">
                             <h4
                                 class="text-sm {{ 'font-bold text-gray-800' if not note.is_read else 'font-medium text-gray-500' }} notification-title">
                                 {{ note.title }}</h4>
                             <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ note.message }}</p>
                             <p class="text-[10px] text-gray-400 mt-1 text-right">{{ note.created_at }}</p>
-                        </div>
+                        </a>
                         {% endfor %}
                         {% else %}
                         <div class="p-4 text-center text-gray-500 text-sm">No notifications</div>
@@ -223,6 +262,67 @@
             </div>
         </div>
     </main>
+    <script>
+        // Notification Logic
+        const dropdown = document.getElementById('notification-dropdown');
+        const bellBtn = dropdown.previousElementSibling;
+        const markReadBtn = document.getElementById('mark-read-btn');
+        const badge = bellBtn.querySelector('.bg-red-500');
+
+        // Mobile Menu Logic
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const sidebar = document.getElementById('sidebar');
+
+        if (mobileMenuBtn) {
+            mobileMenuBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('hidden');
+                sidebar.classList.toggle('-translate-x-full');
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth < 768 && !sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                    sidebar.classList.add('hidden');
+                    sidebar.classList.add('-translate-x-full');
+                }
+            });
+        }
+
+        // Toggle Dropdown
+        window.addEventListener('click', (e) => {
+            if (!bellBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Mark as Read
+        if (markReadBtn) {
+            markReadBtn.addEventListener('click', async () => {
+                try {
+                    const res = await fetch('{{ url_for("mark_notifications_read") }}', { method: 'POST' });
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        // Remove badges
+                        document.querySelectorAll('.animate-ping, .bg-red-500').forEach(el => el.remove());
+                        // Stop bell animation
+                        const bellIcon = bellBtn.querySelector('.material-symbols-outlined');
+                        if (bellIcon) bellIcon.classList.remove('animate-bell-ring', 'text-primary');
+
+                        dropdown.querySelectorAll('.font-bold').forEach(el => {
+                            el.classList.remove('font-bold', 'text-gray-800');
+                            el.classList.add('font-medium', 'text-gray-500');
+                        });
+                        markReadBtn.innerText = 'All read';
+                        markReadBtn.classList.remove('cursor-pointer', 'hover:underline', 'text-primary');
+                        markReadBtn.classList.add('text-gray-400', 'cursor-default');
+                    }
+                } catch (err) {
+                    console.error('Error marking read:', err);
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>
