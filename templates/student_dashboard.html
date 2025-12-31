@@ -82,11 +82,118 @@
                 <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
                 <p class="text-gray-500 text-sm">Welcome back to your academic portal.</p>
             </div>
-            <button class="relative p-2 text-gray-400 hover:text-primary transition-colors">
-                <span class="material-symbols-outlined">notifications</span>
-                <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+            <div class="relative">
+                <button id="notificationBtn"
+                    class="relative p-2 text-gray-400 hover:text-primary transition-colors focus:outline-none">
+                    <span class="material-symbols-outlined">notifications</span>
+                    <span id="notifBadge" class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+                </button>
+
+                <!-- Notification Dropdown -->
+                <div id="notificationPanel"
+                    class="hidden absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden">
+                    <div class="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                        <h3 class="text-sm font-bold text-gray-700">Notifications</h3>
+                        <button onclick="markAllRead()" class="text-xs text-primary hover:underline">Mark all
+                            read</button>
+                    </div>
+                    <div id="notificationList" class="max-h-64 overflow-y-auto">
+                        <!-- Notifications injected here -->
+                        <div class="p-4 text-center text-gray-500 text-sm">Loading...</div>
+                    </div>
+                </div>
+            </div>
         </header>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const btn = document.getElementById('notificationBtn');
+                const panel = document.getElementById('notificationPanel');
+
+                btn.addEventListener('click', () => {
+                    panel.classList.toggle('hidden');
+                });
+
+                // Close when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!btn.contains(e.target) && !panel.contains(e.target)) {
+                        panel.classList.add('hidden');
+                    }
+                });
+
+                fetchNotifications();
+            });
+
+            async function fetchNotifications() {
+                try {
+                    const res = await fetch('/api/notifications');
+                    const data = await res.json();
+
+                    const list = document.getElementById('notificationList');
+                    const badge = document.getElementById('notifBadge');
+
+                    list.innerHTML = '';
+
+                    if (data.length > 0) {
+                        badge.classList.remove('hidden');
+                        data.forEach(notif => {
+                            const item = document.createElement('div');
+                            item.className = 'p-3 border-b border-gray-50 hover:bg-gray-50 transition-colors flex items-start gap-3 relative';
+                            item.innerHTML = `
+                                <div class="w-2 h-2 mt-1.5 rounded-full bg-blue-500 shrink-0"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-800">${notif.message}</p>
+                                    <span class="text-xs text-gray-400">${new Date(notif.created_at).toLocaleString()}</span>
+                                    ${notif.link !== '#' ? `<a href="${notif.link}" class="block mt-1 text-xs text-primary hover:underline">View Details</a>` : ''}
+                                </div>
+                                <button onclick="markRead(${notif.notification_id}, this)" class="text-gray-300 hover:text-gray-500">
+                                    <span class="material-symbols-outlined text-sm">close</span>
+                                </button>
+                            `;
+                            list.appendChild(item);
+                        });
+                    } else {
+                        badge.classList.add('hidden');
+                        list.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">No new notifications</div>';
+                    }
+                } catch (e) {
+                    console.error("Error fetching notifications", e);
+                }
+            }
+
+            async function markRead(id, btn) {
+                try {
+                    await fetch('/api/notifications/mark_read', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ notification_id: id })
+                    });
+                    // Remove item from UI
+                    btn.closest('div').remove();
+                    // Check if empty
+                    const list = document.getElementById('notificationList');
+                    if (list.children.length === 0) {
+                        list.innerHTML = '<div class="p-4 text-center text-gray-500 text-sm">No new notifications</div>';
+                        document.getElementById('notifBadge').classList.add('hidden');
+                    }
+                } catch (e) {
+                    console.error("Error marking read", e);
+                }
+            }
+
+            async function markAllRead() {
+                try {
+                    await fetch('/api/notifications/mark_read', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({}) // Empty body implies all
+                    });
+                    fetchNotifications();
+                } catch (e) {
+                    console.error("Error marking all read", e);
+                }
+            }
+        </script>
 
         <!-- Stats Overview -->
         <div class="mb-8">

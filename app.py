@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 import mysql.connector
 from db_config import DB_CONFIG
 
@@ -136,6 +136,20 @@ def get_user_info(user_id):
             print(f"Error fetching user data: {err}")
     return user
 
+# Helper to create notification
+def create_notification(user_id, message, type='info', link='#'):
+    conn = get_db_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            query = "INSERT INTO Notification (user_id, message, type, link) VALUES (%s, %s, %s, %s)"
+            cursor.execute(query, (user_id, message, type, link))
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error creating notification: {err}")
+
 # --- Student Routes ---
 @app.route('/student_dashboard')
 def student_dashboard():
@@ -267,6 +281,20 @@ def select_project():
                     # Create Selection
                     query = "INSERT INTO Selection (student_id, project_id, status) VALUES (%s, %s, 'pending')"
                     cursor.execute(query, (student['student_id'], project_id))
+                    
+                    # Notify Supervisor
+                    cursor.execute("""
+                        SELECT U.user_id 
+                        FROM Project P 
+                        JOIN Supervisor S ON P.supervisor_id = S.supervisor_id 
+                        JOIN User U ON S.user_id = U.user_id 
+                        WHERE P.project_id = %s
+                    """, (project_id,))
+                    sup_user = cursor.fetchone()
+                    if sup_user:
+                        msg = f"New student selection for project."
+                        create_notification(sup_user['user_id'], msg, 'info', url_for('supervisor_dashboard'))
+                        
                     conn.commit()
                     flash("Project selected successfully! Waiting for supervisor approval.")
             
@@ -400,6 +428,20 @@ def submit_task():
                         cursor.execute(query, (task_id, student['student_id'], filename))
                         flash('Task submitted successfully!')
                         
+                    # Notify Supervisor (for both insert and update)
+                    cursor.execute("""
+                        SELECT U.user_id 
+                        FROM Task T
+                        JOIN Project P ON T.project_id = P.project_id
+                        JOIN Supervisor S ON P.supervisor_id = S.supervisor_id
+                        JOIN User U ON S.user_id = U.user_id
+                        WHERE T.task_id = %s
+                    """, (task_id,))
+                    sup_user = cursor.fetchone()
+                    if sup_user:
+                        msg = f"New submission (or update) for task."
+                        create_notification(sup_user['user_id'], msg, 'info', url_for('supervisor_dashboard'))
+                        
                     conn.commit()
                 
                 cursor.close()
@@ -436,9 +478,10 @@ def supervisor_dashboard():
                 
                 # 1. Project Count & List
                 cursor.execute("""
-                    SELECT project_id, title, status, description 
-                    FROM Project 
-                    WHERE supervisor_id = %s
+                    SELECT P.project_id, P.title, P.status, P.description,
+                           (SELECT COUNT(*) FROM Selection WHERE project_id = P.project_id AND status IN ('approved', 'pending')) as student_count
+                    FROM Project P
+                    WHERE P.supervisor_id = %s
                 """, (supervisor_id,))
                 projects = cursor.fetchall()
                 project_count = len(projects)
@@ -451,7 +494,7 @@ def supervisor_dashboard():
                    query_students = f"""
                        SELECT COUNT(DISTINCT student_id) as cnt 
                        FROM Selection 
-                       WHERE project_id IN ({placeholders}) AND status = 'approved'
+                       WHERE project_id IN ({placeholders}) AND status IN ('approved', 'pending')
                    """
                    cursor.execute(query_students, tuple(project_ids))
                    res = cursor.fetchone()
@@ -566,9 +609,22 @@ def create_task():
                 project = cursor.fetchone()
                 
                 if project:
-                    # 2. Create Task
                     query = "INSERT INTO Task (project_id, title, instruction, deadline) VALUES (%s, %s, %s, %s)"
                     cursor.execute(query, (project_id, title, instruction, deadline))
+                    
+                    # Notify Enrolled Students
+                    cursor.execute("""
+                        SELECT U.user_id 
+                        FROM Selection Sel 
+                        JOIN Student S ON Sel.student_id = S.student_id 
+                        JOIN User U ON S.user_id = U.user_id 
+                        WHERE Sel.project_id = %s AND Sel.status = 'approved'
+                    """, (project_id,))
+                    students = cursor.fetchall()
+                    for stu in students:
+                        msg = f"New task '{title}' created in your project."
+                        create_notification(stu['user_id'], msg, 'info', url_for('student_project_detail'))
+
                     conn.commit()
                     flash(f"Task '{title}' created successfully!")
                 else:
@@ -702,7 +758,7 @@ def supervisor_projects():
                 # Fetch projects with student counts and task counts
                 query = """
                     SELECT P.*, 
-                           (SELECT COUNT(*) FROM Selection WHERE project_id = P.project_id AND status='approved') as student_count,
+                           (SELECT COUNT(*) FROM Selection WHERE project_id = P.project_id AND status IN ('approved', 'pending')) as student_count,
                            (SELECT COUNT(*) FROM Task WHERE project_id = P.project_id) as task_count
                     FROM Project P
                     WHERE P.supervisor_id = %s
@@ -730,9 +786,24 @@ def supervisor_evaluation(submission_id):
         
         if conn:
             try:
-                cursor = conn.cursor()
+                cursor = conn.cursor(dictionary=True)
                 query = "INSERT INTO Evaluation (submission_id, grade, feedback) VALUES (%s, %s, %s)"
                 cursor.execute(query, (submission_id, grade, feedback))
+                
+                # Notify Student
+                cursor.execute("""
+                    SELECT U.user_id, T.title
+                    FROM Submission Sub
+                    JOIN Student S ON Sub.student_id = S.student_id
+                    JOIN User U ON S.user_id = U.user_id
+                    JOIN Task T ON Sub.task_id = T.task_id
+                    WHERE Sub.submission_id = %s
+                """, (submission_id,))
+                stu_user = cursor.fetchone()
+                if stu_user:
+                    msg = f"Your submission for '{stu_user['title']}' has been evaluated."
+                    create_notification(stu_user['user_id'], msg, 'info', url_for('student_project_detail'))
+                
                 conn.commit()
                 cursor.close()
                 conn.close()
@@ -808,6 +879,55 @@ def supervisor_evaluations():
             
     return render_template('supervisor_evaluations.html', user=user, pending_submissions=pending_submissions)
 
+# --- Notification API ---
+@app.route('/api/notifications')
+def get_notifications():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    conn = get_db_connection()
+    notifications = []
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            query = "SELECT * FROM Notification WHERE user_id = %s AND is_read = FALSE ORDER BY created_at DESC"
+            cursor.execute(query, (session['user_id'],))
+            notifications = cursor.fetchall()
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            return jsonify({'error': str(err)}), 500
+            
+    return jsonify(notifications)
+
+@app.route('/api/notifications/mark_read', methods=['POST'])
+def mark_notifications_read():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+        
+    data = request.json
+    notification_id = data.get('notification_id')
+    
+    conn = get_db_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            if notification_id:
+                cursor.execute("UPDATE Notification SET is_read = TRUE WHERE notification_id = %s AND user_id = %s", 
+                               (notification_id, session['user_id']))
+            else:
+                # Mark all as read
+                cursor.execute("UPDATE Notification SET is_read = TRUE WHERE user_id = %s", (session['user_id'],))
+            
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return jsonify({'status': 'success'})
+        except mysql.connector.Error as err:
+            return jsonify({'error': str(err)}), 500
+            
+    return jsonify({'error': 'Database connection failed'}), 500
+
 # --- Admin Routes ---
 @app.route('/admin_dashboard')
 def admin_dashboard():
@@ -820,65 +940,4 @@ def admin_users():
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
 
-def get_db_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="aps_db"
-    )
 
-@app.route("/admin/dashboard")
-def admin_dashboard():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    # Dashboard counts
-    cursor.execute("SELECT COUNT(*) AS count FROM Student")
-    students = cursor.fetchone()["count"]
-
-    cursor.execute("SELECT COUNT(*) AS count FROM Supervisor")
-    supervisors = cursor.fetchone()["count"]
-
-    cursor.execute("SELECT COUNT(*) AS count FROM Project WHERE status='active'")
-    projects = cursor.fetchone()["count"]
-
-    cursor.execute("SELECT COUNT(*) AS count FROM Submission")
-    submissions = cursor.fetchone()["count"]
-
-    # Activity logs
-    cursor.execute("""
-        SELECT 
-            CONCAT(u.first_name, ' ', u.last_name) AS full_name,
-            u.role,
-            a.description,
-            a.timestamp
-        FROM Activity_Log a
-        LEFT JOIN User u ON a.user_id = u.user_id
-        ORDER BY a.timestamp DESC
-        LIMIT 10
-    """)
-    logs = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    return render_template(
-        "admin_dashboard.html",
-        students=students,
-        supervisors=supervisors,
-        projects=projects,
-        submissions=submissions,
-        logs=logs
-    )
-
-def log_activity(user_id, action_type, description):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        INSERT INTO Activity_Log (user_id, action_type, description)
-        VALUES (%s, %s, %s)
-    """, (user_id, action_type, description))
-    conn.commit()
-    cursor.close()
-    conn.close()
