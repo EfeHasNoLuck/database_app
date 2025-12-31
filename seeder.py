@@ -99,47 +99,6 @@ def init_and_seed():
             )
             print(f"Created Supervisor: {first} {last}")
 
-        # --- Projects & Selections ---
-        print("Seeding Projects...")
-        # Get Supervisor (Dr. Frank)
-        cursor.execute("SELECT supervisor_id FROM Supervisor LIMIT 1")
-        sup = cursor.fetchone()
-        if sup:
-            sup_id = sup[0]
-            # Create Project
-            cursor.execute("""
-                INSERT INTO Project (title, description, status, supervisor_id)
-                VALUES (%s, %s, 'active', %s)
-            """, ("AI-Driven Traffic Management System", "Using Deep Learning to optimize city traffic lights.", sup_id))
-            project_id = cursor.lastrowid
-            print("Created Project: AI-Driven Traffic Management System")
-
-            # Get Student (Alice)
-            cursor.execute("""
-                SELECT s.student_id, u.user_id 
-                FROM Student s 
-                JOIN User u ON s.user_id = u.user_id 
-                WHERE u.email = 'alice@edu.com'
-            """)
-            student = cursor.fetchone()
-            
-            if student:
-                student_id, user_id = student
-                # Create Selection (Approved)
-                cursor.execute("""
-                    INSERT INTO Selection (student_id, project_id, status)
-                    VALUES (%s, %s, 'approved')
-                """, (student_id, project_id))
-                print("Assigned Project to Alice.")
-
-                # Create Notification
-                cursor.execute("""
-                    INSERT INTO Notification (user_id, title, message)
-                    VALUES (%s, %s, %s)
-                """, (user_id, "Project Approved", "Your project 'AI-Driven Traffic Management' has been approved. Deadline: 2026-06-01."))
-
-        conn.commit()
-
         # Seed Notifications (for testing)
         print("Seeding Notifications...")
         cursor.execute("SELECT user_id FROM User LIMIT 1")
