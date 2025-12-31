@@ -60,12 +60,19 @@
         <!-- User Profile -->
         <div class="p-4 border-t border-gray-100">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
-                    <span class="material-symbols-outlined">person</span>
+                <div
+                    class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
+                    {{ user.first_name[0] }}{{ user.last_name[0] }}
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-bold text-gray-900 truncate">{{ user.first_name }} {{ user.last_name }}</p>
                     <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
+                    {% if user.student_no %}
+                    <div class="mt-2 pt-2 border-t border-gray-100">
+                        <p class="text-xs text-secondary font-medium">{{ user.department }}</p>
+                        <p class="text-[10px] text-gray-400">ID: {{ user.student_no }}</p>
+                    </div>
+                    {% endif %}
                 </div>
                 <a href="{{ url_for('login') }}" class="text-gray-400 hover:text-red-500 transition-colors">
                     <span class="material-symbols-outlined">logout</span>
@@ -82,10 +89,39 @@
                 <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
                 <p class="text-gray-500 text-sm">Welcome back to your academic portal.</p>
             </div>
-            <button class="relative p-2 text-gray-400 hover:text-primary transition-colors">
-                <span class="material-symbols-outlined">notifications</span>
-                <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+            <div class="relative">
+                <button onclick="document.getElementById('notification-dropdown').classList.toggle('hidden')"
+                    class="relative p-2 text-gray-400 hover:text-primary transition-colors focus:outline-none">
+                    <span class="material-symbols-outlined">notifications</span>
+                    {% if notifications and notifications|selectattr("is_read", "equalto", 0)|list|length > 0 %}
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                    {% endif %}
+                </button>
+                <!-- Notification Dropdown -->
+                <div id="notification-dropdown"
+                    class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 hidden z-50">
+                    <div class="p-3 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="font-bold text-gray-900 text-sm">Notifications</h3>
+                        <span id="mark-read-btn" class="text-xs text-primary cursor-pointer hover:underline">Mark all as
+                            read</span>
+                    </div>
+                    <div class="max-h-64 overflow-y-auto">
+                        {% if notifications %}
+                        {% for note in notifications %}
+                        <div class="p-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0">
+                            <h4
+                                class="text-sm font-semibold text-gray-800 {{ 'text-gray-500' if note.is_read else '' }}">
+                                {{ note.title }}</h4>
+                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ note.message }}</p>
+                            <p class="text-[10px] text-gray-400 mt-1 text-right">{{ note.created_at }}</p>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="p-4 text-center text-gray-500 text-sm">No notifications</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
         </header>
 
         <!-- Stats Overview -->
@@ -151,6 +187,46 @@
             </section>
         </div>
     </main>
+
+    <script>
+        // Notification Logic
+        const dropdown = document.getElementById('notification-dropdown');
+        const bellBtn = dropdown.previousElementSibling;
+        const markReadBtn = document.getElementById('mark-read-btn');
+        const badge = bellBtn.querySelector('.bg-red-500');
+
+        // Toggle Dropdown (already inline, but let's robustify click outside)
+        window.addEventListener('click', (e) => {
+            if (!bellBtn.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Mark as Read
+        if (markReadBtn) {
+            markReadBtn.addEventListener('click', async () => {
+                try {
+                    const res = await fetch('{{ url_for("mark_notifications_read") }}', { method: 'POST' });
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        // Remove badge
+                        if (badge) badge.remove();
+                        // Optional: Gray out list or clear it. For now, just remove badge is enough feedback.
+                        // Or iterate and remove 'font-semibold'
+                        dropdown.querySelectorAll('.font-semibold').forEach(el => {
+                            el.classList.remove('font-semibold');
+                            el.classList.add('text-gray-500');
+                        });
+                        markReadBtn.innerText = 'All read';
+                        markReadBtn.classList.remove('cursor-pointer', 'hover:underline', 'text-primary');
+                        markReadBtn.classList.add('text-gray-400', 'cursor-default');
+                    }
+                } catch (err) {
+                    console.error('Error marking read:', err);
+                }
+            });
+        }
+    </script>
 </body>
 
 </html>

@@ -4,6 +4,6 @@
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
-    'password': '',  # Default is often empty or 'password'
+    'password': 'mysql',  # Common default for Ampps
     'database': 'aps_db'
 }

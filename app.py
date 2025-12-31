@@ -128,13 +128,63 @@ def get_user_info(user_id):
     if conn:
         try:
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT first_name, last_name, email FROM User WHERE user_id = %s", (user_id,))
+            # Basic User Info
+            query_base = "SELECT user_id, first_name, last_name, email, role FROM User WHERE user_id = %s"
+            cursor.execute(query_base, (user_id,))
             user = cursor.fetchone()
+            
+            if user:
+                # Fetch Role Specific Info
+                if user['role'] == 'student':
+                    cursor.execute("SELECT student_no, department FROM Student WHERE user_id = %s", (user_id,))
+                    student_data = cursor.fetchone()
+                    if student_data:
+                        user.update(student_data)
+                elif user['role'] == 'supervisor':
+                    cursor.execute("SELECT title, expertise FROM Supervisor WHERE user_id = %s", (user_id,))
+                    supervisor_data = cursor.fetchone()
+                    if supervisor_data:
+                        user.update(supervisor_data)
+                        
             cursor.close()
             conn.close()
         except mysql.connector.Error as err:
             print(f"Error fetching user data: {err}")
     return user
+
+# Helper to fetch notifications
+def get_notifications(user_id):
+    conn = get_db_connection()
+    notifications = []
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            query = "SELECT title, message, created_at, is_read FROM Notification WHERE user_id = %s ORDER BY created_at DESC LIMIT 5"
+            cursor.execute(query, (user_id,))
+            notifications = cursor.fetchall()
+            cursor.close()
+            conn.close()
+        except mysql.connector.Error as err:
+            print(f"Error fetching notifications: {err}")
+    return notifications
+
+@app.route('/mark_notifications_read', methods=['POST'])
+def mark_notifications_read():
+    if 'user_id' not in session:
+        return {'status': 'error', 'message': 'Unauthorized'}, 401
+    
+    conn = get_db_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE Notification SET is_read = 1 WHERE user_id = %s", (session['user_id'],))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return {'status': 'success'}
+        except mysql.connector.Error as err:
+            return {'status': 'error', 'message': str(err)}, 500
+    return {'status': 'error', 'message': 'Database connection failed'}, 500
 
 # --- Student Routes ---
 @app.route('/student_dashboard')
@@ -198,7 +248,7 @@ def student_dashboard():
         except mysql.connector.Error as err:
             print(f"Error fetching dashboard data: {err}")
             
-    return render_template('student_dashboard.html', user=user, active_project=active_project, activities=activities)
+    return render_template('student_dashboard.html', user=user, active_project=active_project, activities=activities, notifications=get_notifications(session['user_id']))
 
 @app.route('/student_projects')
 def student_projects():
@@ -500,7 +550,8 @@ def supervisor_dashboard():
             
     return render_template('supervisor_dashboard.html', user=user, pending_submissions=pending_submissions, 
                            completed_evaluations=completed_evaluations,
-                           project_count=project_count, student_count=student_count, projects=projects)
+                           project_count=project_count, student_count=student_count, projects=projects,
+                           notifications=get_notifications(session['user_id']))
 
 @app.route('/supervisor_create_project', methods=['GET', 'POST'])
 def supervisor_create_project():
