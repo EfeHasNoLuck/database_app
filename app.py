@@ -759,11 +759,11 @@ def supervisor_project_detail(project_id):
             
             # 3. Fetch Enrolled Students
             query_students = """
-                SELECT S.student_no, U.first_name, U.last_name, U.email
+                SELECT S.student_no, U.first_name, U.last_name, U.email, Sel.status, S.department
                 FROM Selection Sel
                 JOIN Student S ON Sel.student_id = S.student_id
                 JOIN User U ON S.user_id = U.user_id
-                WHERE Sel.project_id = %s AND Sel.status = 'approved'
+                WHERE Sel.project_id = %s AND Sel.status IN ('approved', 'pending')
             """
             cursor.execute(query_students, (project_id,))
             students = cursor.fetchall()

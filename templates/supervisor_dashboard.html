@@ -326,8 +326,8 @@
                     <div class="space-y-4">
                         {% if projects %}
                         {% for project in projects %}
-                        <div
-                            class="p-3 border border-gray-200 rounded-lg hover:border-primary cursor-pointer transition-colors group">
+                        <a href="{{ url_for('supervisor_project_detail', project_id=project.project_id) }}"
+                            class="block p-3 border border-gray-200 rounded-lg hover:border-primary transition-colors group">
                             <div class="flex justify-between items-start mb-1">
                                 <h4 class="font-bold text-gray-900 group-hover:text-primary transition-colors">{{
                                     project.title }}</h4>
@@ -340,7 +340,7 @@
                                 <span class="material-symbols-outlined text-[16px]">group</span>
                                 <span class="text-xs font-medium">{{ project.student_count }} Students</span>
                             </div>
-                        </div>
+                        </a>
                         {% endfor %}
                         {% else %}
                         <p class="text-sm text-gray-500 text-center py-4">No projects yet. Click + to create one.</p>

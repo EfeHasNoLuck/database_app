@@ -36,9 +36,6 @@ CREATE TABLE IF NOT EXISTS Supervisor (
     FOREIGN KEY (user_id) REFERENCES User (user_id) ON DELETE CASCADE
 );
 
--- Admin Table (Optional, or just use User role)
--- For now, we rely on User.role = 'admin'
-
 -- Project Table
 CREATE TABLE IF NOT EXISTS Project (
     project_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -123,35 +120,3 @@ CREATE TABLE IF NOT EXISTS Activity_Log (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES User (user_id) ON DELETE SET NULL
 );
-
--- Active Students
-SELECT COUNT(*) FROM Student;
-
--- Supervisors
-SELECT COUNT(*) FROM Supervisor;
-
--- Active Projects
-SELECT COUNT(*) FROM Project WHERE status = 'active';
-
--- File Submissions
-SELECT COUNT(*) FROM Submission;
-
-SELECT CONCAT(
-        u.first_name, ' ', u.last_name
-    ) AS full_name, u.role, a.description, a.timestamp
-FROM Activity_Log a
-    LEFT JOIN User u ON a.user_id = u.user_id
-ORDER BY a.timestamp DESC
-LIMIT 10;
-
-INSERT INTO
-    Activity_Log (
-        user_id,
-        action_type,
-        description
-    )
-VALUES (
-        3,
-        'submission',
-        'Submitted "Task 1: ER Diagram"'
-    );

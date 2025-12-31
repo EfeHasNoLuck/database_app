@@ -101,16 +101,7 @@
                     {{ project.description }}
                 </p>
                 <div class="flex flex-wrap gap-4 text-sm">
-                    <div
-                        class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg text-gray-700 border border-gray-200">
-                        <span class="material-symbols-outlined text-lg text-gray-500">category</span>
-                        CS-Project
-                    </div>
-                    <div
-                        class="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-lg text-gray-700 border border-gray-200">
-                        <span class="material-symbols-outlined text-lg text-gray-500">group</span>
-                        {{ students|length }} Students Enrolled
-                    </div>
+
                     <div
                         class="flex items-center gap-2 {{ 'bg-green-50 text-green-700 border-green-200' if project.status == 'active' else 'bg-gray-50 text-gray-700 border-gray-200' }} px-3 py-1.5 rounded-lg border font-medium">
                         <span class="material-symbols-outlined text-lg">check_circle</span>
@@ -171,28 +162,28 @@
                     <div class="divide-y divide-gray-100">
                         {% if students %}
                         {% for student in students %}
-                        <div class="p-4 flex items-center gap-3 hover:bg-gray-50">
+                        <div class="p-4 flex items-start gap-3 hover:bg-gray-50 border-b border-gray-50 last:border-0">
                             <div
-                                class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold">
-                                {{ student.first_name[0] }}{{ student.last_name[0] }}</div>
-                            <div class="flex-1">
+                                class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xs font-bold mt-0.5 shrink-0">
+                                {{ student.first_name[0] }}{{ student.last_name[0] }}
+                            </div>
+                            <div class="flex-1 min-w-0">
                                 <p class="text-sm font-bold text-gray-900">{{ student.first_name }} {{ student.last_name
                                     }}</p>
-                                <p class="text-xs text-gray-500">{{ student.email }}</p>
+                                <p class="text-xs text-gray-500 truncate">{{ student.email }}</p>
+                                {% if student.department %}
+                                <p class="text-xs text-gray-400 mt-0.5 truncate">
+                                    {{ student.department }}
+                                </p>
+                                {% endif %}
                             </div>
-                            <button class="text-gray-300 hover:text-primary"><span
-                                    class="material-symbols-outlined">mail</span></button>
                         </div>
                         {% endfor %}
                         {% else %}
                         <div class="p-4 text-center text-gray-500">No students enrolled.</div>
                         {% endif %}
                     </div>
-                    {% if students %}
-                    <div class="p-3 bg-gray-50 text-center border-t border-gray-100">
-                        <button class="text-sm text-primary font-bold hover:underline">Manage Students</button>
-                    </div>
-                    {% endif %}
+
                 </div>
             </div>
         </div>
