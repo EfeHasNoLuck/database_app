@@ -24,47 +24,11 @@
                     },
                     fontFamily: {
                         sans: ['Be Vietnam Pro', 'sans-serif'],
-                    },
-                    animation: {
-                        'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
-                        'bell-ring': 'bell-ring 4s ease-in-out infinite'
-                    },
-                    keyframes: {
-                        'shake': {
-                            '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
-                            '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
-                            '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
-                            '40%, 60%': { transform: 'translate3d(4px, 0, 0)' }
-                        },
-                        'bell-ring': {
-                            '0%, 100%': { transform: 'rotate(0)' },
-                            '5%, 15%': { transform: 'rotate(15deg)' },
-                            '10%, 20%': { transform: 'rotate(-15deg)' },
-                            '25%': { transform: 'rotate(0)' }
-                        }
                     }
                 }
             }
         }
     </script>
-    <style>
-        .hover-scale {
-            transition: transform 0.2s ease-in-out;
-        }
-
-        .hover-scale:hover {
-            transform: scale(1.02);
-        }
-
-        .sidebar-item-hover:hover {
-            transform: translateX(5px);
-        }
-
-        .notification-item:hover {
-            background-color: #f3f4f6;
-            cursor: pointer;
-        }
-    </style>
 </head>
 
 <body class="bg-background text-gray-800 font-sans min-h-screen flex">
@@ -83,19 +47,14 @@
         <!-- Navigation -->
         <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
             <a href="{{ url_for('student_dashboard') }}"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium hover-scale sidebar-item-hover transition-all">
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium">
                 <span class="material-symbols-outlined">dashboard</span>
                 Dashboard
             </a>
             <a href="{{ url_for('student_projects') }}"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors hover-scale sidebar-item-hover transition-all">
-                <span class="material-symbols-outlined">folder</span>
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <span class="material-symbols-outlined">list_alt</span>
                 Projects
-            </a>
-            <a href="#"
-                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors hover-scale sidebar-item-hover transition-all">
-                <span class="material-symbols-outlined">assignment</span>
-                Assignments
             </a>
         </nav>
 
@@ -138,35 +97,46 @@
             </div>
             <div class="relative">
                 <button onclick="document.getElementById('notification-dropdown').classList.toggle('hidden')"
-                    class="relative p-2 text-gray-400 hover:text-primary transition-colors focus:outline-none hover-scale">
-                    <span
-                        class="material-symbols-outlined {{ 'animate-bell-ring text-primary' if notifications and notifications|selectattr('is_read', 'equalto', 0)|list|length > 0 }}">notifications</span>
+                    class="relative p-2 text-gray-400 hover:text-primary transition-colors focus:outline-none">
+                    <span class="material-symbols-outlined">notifications</span>
                     {% if notifications and notifications|selectattr("is_read", "equalto", 0)|list|length > 0 %}
-                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
                     <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
                     {% endif %}
                 </button>
                 <!-- Notification Dropdown -->
                 <div id="notification-dropdown"
-                    class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 hidden z-50 transform origin-top-right transition-all duration-200">
+                    class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 hidden z-50 transform origin-top-right">
                     <div class="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-xl">
                         <h3 class="font-bold text-gray-900 text-sm">Notifications</h3>
                         <span id="mark-read-btn"
-                            class="text-xs text-primary cursor-pointer hover:underline font-medium hover-scale">Mark all
-                            as
+                            class="text-xs text-primary cursor-pointer hover:underline font-medium">Mark all as
                             read</span>
                     </div>
                     <div class="max-h-64 overflow-y-auto" id="notification-list">
                         {% if notifications %}
                         {% for note in notifications %}
-                        <a href="{{ note.related_link or '#' }}"
-                            class="block p-3 border-b border-gray-50 last:border-0 notification-item transition-all duration-200">
+                        {% if 'Project' in note.title %}
+                        <a href="{{ url_for('student_project_detail') }}"
+                            class="block p-3 hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-0 notification-item group">
+                            <h4
+                                class="text-sm {{ 'font-bold text-blue-700' if not note.is_read else 'font-medium text-blue-600' }} notification-title flex items-center gap-2">
+                                <span class="material-symbols-outlined text-xs">arrow_forward</span>
+                                {{ note.title }}
+                            </h4>
+                            <p class="text-xs text-gray-600 mt-1 line-clamp-2 group-hover:text-blue-500">{{ note.message
+                                }}</p>
+                            <p class="text-[10px] text-gray-400 mt-1 text-right">{{ note.created_at }}</p>
+                        </a>
+                        {% else %}
+                        <div
+                            class="p-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 notification-item">
                             <h4
                                 class="text-sm {{ 'font-bold text-gray-800' if not note.is_read else 'font-medium text-gray-500' }} notification-title">
                                 {{ note.title }}</h4>
                             <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ note.message }}</p>
                             <p class="text-[10px] text-gray-400 mt-1 text-right">{{ note.created_at }}</p>
-                        </a>
+                        </div>
+                        {% endif %}
                         {% endfor %}
                         {% else %}
                         <div class="p-4 text-center text-gray-500 text-sm">No notifications</div>
