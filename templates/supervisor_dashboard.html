@@ -56,6 +56,11 @@
                 <span class="material-symbols-outlined">folder_managed</span>
                 My Projects
             </a>
+            <a href="{{ url_for('supervisor_evaluations') }}"
+                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+                <span class="material-symbols-outlined">fact_check</span>
+                Evaluations
+            </a>
 
 
         </nav>
@@ -65,15 +70,16 @@
             <div class="flex items-center gap-3">
                 <div
                     class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-                    {{ user.first_name[0] }}{{ user.last_name[0] }}
+                    {{ user.first_name.replace('Dr. ', '').replace('Dr ', '').strip()[0] }}{{ user.last_name[0] }}
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-bold text-gray-900 truncate">{{ user.first_name }} {{ user.last_name }}</p>
                     <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
-                    {% if user.title %}
+                    {% if user.role == 'supervisor' %}
                     <div class="mt-2 pt-2 border-t border-gray-100">
-                        <p class="text-xs text-secondary font-medium">{{ user.title }}</p>
-                        <p class="text-[10px] text-gray-400">{{ user.expertise }}</p>
+                        <p class="text-xs text-secondary font-medium">{{ user.title or 'Supervisor' }}</p>
+                        <p class="text-[10px] text-gray-400 capitalize">{{ user.expertise[:20] + '...' if user.expertise
+                            else '' }}</p>
                     </div>
                     {% endif %}
                 </div>
@@ -204,7 +210,8 @@
                             <div class="flex items-start gap-4">
                                 <div
                                     class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 font-bold text-sm">
-                                    {{ sub.first_name[0] }}{{ sub.last_name[0] }}</div>
+                                    {{ sub.first_name.replace('Dr. ', '').replace('Dr ', '').strip()[0] }}{{
+                                    sub.last_name[0] }}</div>
                                 <div>
                                     <h4 class="text-sm font-bold text-gray-900">{{ sub.first_name }} {{ sub.last_name }}
                                     </h4>
@@ -246,7 +253,8 @@
                             <div class="flex items-start gap-4">
                                 <div
                                     class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-green-600 shrink-0 font-bold text-sm">
-                                    {{ eval.first_name[0] }}{{ eval.last_name[0] }}</div>
+                                    {{ eval.first_name.replace('Dr. ', '').replace('Dr ', '').strip()[0] }}{{
+                                    eval.last_name[0] }}</div>
                                 <div>
                                     <h4 class="text-sm font-bold text-gray-900">{{ eval.first_name }} {{ eval.last_name
                                         }}
