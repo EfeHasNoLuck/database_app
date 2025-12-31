@@ -761,9 +761,7 @@ def supervisor_project_detail(project_id):
              print(f"Error fetching project detail: {err}")
              flash(f"Error: {err}")
              
-    notifications = get_notifications(session['user_id'])
-    
-    return render_template('supervisor_project_detail.html', user=user, project=project, tasks=tasks, students=students, notifications=notifications)
+    return render_template('supervisor_project_detail.html', user=user, project=project, tasks=tasks, students=students)
 
 @app.route('/supervisor_projects')
 def supervisor_projects():
@@ -771,7 +769,6 @@ def supervisor_projects():
         return redirect(url_for('login'))
         
     user = get_user_info(session['user_id'])
-    notifications = get_notifications(session['user_id'])
     conn = get_db_connection()
     projects = []
     
@@ -798,7 +795,7 @@ def supervisor_projects():
         except mysql.connector.Error as err:
             print(f"Error fetching projects list: {err}")
             
-    return render_template('supervisor_projects.html', user=user, projects=projects, notifications=notifications)
+    return render_template('supervisor_projects.html', user=user, projects=projects)
 
 @app.route('/supervisor_evaluation/<int:submission_id>', methods=['GET', 'POST'])
 def supervisor_evaluation(submission_id):
@@ -854,8 +851,7 @@ def supervisor_evaluation(submission_id):
         except mysql.connector.Error as err:
             print(f"Error fetching submission for evaluation: {err}")
 
-    notifications = get_notifications(session['user_id'])
-    return render_template('supervisor_evaluation.html', user=user, submission=submission, notifications=notifications)
+    return render_template('supervisor_evaluation.html', user=user, submission=submission)
 
 @app.route('/supervisor_evaluations')
 def supervisor_evaluations():
@@ -890,98 +886,71 @@ def supervisor_evaluations():
         except mysql.connector.Error as err:
             print(f"Error fetching evaluations list: {err}")
             
-    notifications = get_notifications(session['user_id'])
-    return render_template('supervisor_evaluations.html', user=user, pending_submissions=pending_submissions, notifications=notifications)
+    return render_template('supervisor_evaluations.html', user=user, pending_submissions=pending_submissions)
 
 # --- Admin Routes ---
 @app.route('/admin_dashboard')
 def admin_dashboard():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-        
-    user = get_user_info(session['user_id'])
-    notifications = get_notifications(session['user_id'])
-    
-    # 2. Security Check: Admin Only
-    if session.get('role') != 'admin':
-        flash('Access denied. Admin privileges required.', 'role_error')
-        return redirect(url_for('login'))
+    return render_template('admin_dashboard.html')
 
+@app.route('/admin_users')
+def admin_users():
+    return render_template('admin_users.html')
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
+
+def get_db_connection():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="aps_db"
+    )
+
+@app.route("/admin/dashboard")
+def admin_dashboard():
     conn = get_db_connection()
-    students = 0
-    supervisors = 0
-    projects = 0
-    submissions = 0
-    logs = []
+    cursor = conn.cursor(dictionary=True)
 
-    if conn:
-        try:
-            cursor = conn.cursor(dictionary=True)
+    # Dashboard counts
+    cursor.execute("SELECT COUNT(*) AS count FROM Student")
+    students = cursor.fetchone()["count"]
 
-            # Dashboard counts
-            cursor.execute("SELECT COUNT(*) AS count FROM Student")
-            res = cursor.fetchone()
-            students = res["count"] if res else 0
+    cursor.execute("SELECT COUNT(*) AS count FROM Supervisor")
+    supervisors = cursor.fetchone()["count"]
 
-            cursor.execute("SELECT COUNT(*) AS count FROM Supervisor")
-            res = cursor.fetchone()
-            supervisors = res["count"] if res else 0
+    cursor.execute("SELECT COUNT(*) AS count FROM Project WHERE status='active'")
+    projects = cursor.fetchone()["count"]
 
-            cursor.execute("SELECT COUNT(*) AS count FROM Project WHERE status='active'")
-            res = cursor.fetchone()
-            projects = res["count"] if res else 0
+    cursor.execute("SELECT COUNT(*) AS count FROM Submission")
+    submissions = cursor.fetchone()["count"]
 
-            cursor.execute("SELECT COUNT(*) AS count FROM Submission")
-            res = cursor.fetchone()
-            submissions = res["count"] if res else 0
+    # Activity logs
+    cursor.execute("""
+        SELECT 
+            CONCAT(u.first_name, ' ', u.last_name) AS full_name,
+            u.role,
+            a.description,
+            a.timestamp
+        FROM Activity_Log a
+        LEFT JOIN User u ON a.user_id = u.user_id
+        ORDER BY a.timestamp DESC
+        LIMIT 10
+    """)
+    logs = cursor.fetchall()
 
-            # Activity logs (Check if table exists first or wrap in try/except if unsure, assuming exists based on code)
-            # cursor.execute("SELECT * FROM Activity_Log ...") - Commenting out if table might not exist yet to avoid crash
-            # For now, let's keep the logic safe.
-            
-            cursor.close()
-            conn.close()
-        except mysql.connector.Error as err:
-            print(f"Error fetching admin stats: {err}")
+    cursor.close()
+    conn.close()
 
     return render_template(
         "admin_dashboard.html",
-        user=user,
-        notifications=notifications,
         students=students,
         supervisors=supervisors,
         projects=projects,
         submissions=submissions,
         logs=logs
     )
-
-@app.route('/admin_users')
-def admin_users():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-        
-    # Security Check
-    if session.get('role') != 'admin':
-        flash('Access denied.', 'role_error')
-        return redirect(url_for('login'))
-        
-    user = get_user_info(session['user_id'])
-    notifications = get_notifications(session['user_id'])
-    
-    # Fetch Users for management (Mock or Real)
-    conn = get_db_connection()
-    users = []
-    if conn:
-        try:
-             cursor = conn.cursor(dictionary=True)
-             cursor.execute("SELECT * FROM User ORDER BY created_at DESC LIMIT 20") # Limit for now
-             users = cursor.fetchall()
-             cursor.close()
-             conn.close()
-        except Exception as e:
-            print(e)
-
-    return render_template('admin_users.html', user=user, notifications=notifications, users=users)
 
 def log_activity(user_id, action_type, description):
     conn = get_db_connection()
@@ -993,6 +962,3 @@ def log_activity(user_id, action_type, description):
     conn.commit()
     cursor.close()
     conn.close()
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)

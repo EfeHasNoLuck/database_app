@@ -61,22 +61,14 @@
         <!-- User Profile -->
         <div class="p-4 border-t border-gray-100">
             <div class="flex items-center gap-3">
-                <div
-                    class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-                    {{ user.first_name.replace('Dr. ', '').replace('Dr ', '').strip()[0] }}{{ user.last_name[0] }}
+                <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                    <span class="material-symbols-outlined">person</span>
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="text-sm font-bold text-gray-900 truncate">{{ user.first_name }} {{ user.last_name }}</p>
                     <p class="text-xs text-gray-500 truncate">{{ user.email }}</p>
-                    {% if user.role == 'supervisor' %}
-                    <div class="mt-2 pt-2 border-t border-gray-100">
-                        <p class="text-xs text-secondary font-medium">{{ user.title or 'Supervisor' }}</p>
-                        <p class="text-[10px] text-gray-400 capitalize">{{ user.expertise[:20] + '...' if user.expertise
-                            else '' }}</p>
-                    </div>
-                    {% endif %}
                 </div>
-                <a href="{{ url_for('logout') }}" class="text-gray-400 hover:text-red-500 transition-colors">
+                <a href="{{ url_for('login') }}" class="text-gray-400 hover:text-red-500 transition-colors">
                     <span class="material-symbols-outlined">logout</span>
                 </a>
             </div>
@@ -85,50 +77,6 @@
 
     <!-- Main Content -->
     <main class="flex-1 ml-64 p-8 overflow-y-auto h-screen">
-        <!-- Header -->
-        <header class="flex justify-between items-center mb-6">
-            <div>
-                <!-- Empty for layout balance or page title if moved here -->
-            </div>
-
-            <!-- Notification Dropdown -->
-            <div class="relative">
-                <button onclick="document.getElementById('notification-dropdown').classList.toggle('hidden')"
-                    class="relative p-2 text-gray-400 hover:text-primary transition-colors focus:outline-none">
-                    <span class="material-symbols-outlined">notifications</span>
-                    {% if notifications and notifications|selectattr("is_read", "equalto", 0)|list|length > 0 %}
-                    <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
-                    {% endif %}
-                </button>
-                <!-- Notification Dropdown -->
-                <div id="notification-dropdown"
-                    class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 hidden z-50 transform origin-top-right">
-                    <div class="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-xl">
-                        <h3 class="font-bold text-gray-900 text-sm">Notifications</h3>
-                        <span id="mark-read-btn"
-                            class="text-xs text-primary cursor-pointer hover:underline font-medium">Mark all as
-                            read</span>
-                    </div>
-                    <div class="max-h-64 overflow-y-auto" id="notification-list">
-                        {% if notifications %}
-                        {% for note in notifications %}
-                        <div
-                            class="p-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 notification-item">
-                            <h4
-                                class="text-sm {{ 'font-bold text-gray-800' if not note.is_read else 'font-medium text-gray-500' }} notification-title">
-                                {{ note.title }}</h4>
-                            <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ note.message }}</p>
-                            <p class="text-[10px] text-gray-400 mt-1 text-right">{{ note.created_at }}</p>
-                        </div>
-                        {% endfor %}
-                        {% else %}
-                        <div class="p-4 text-center text-gray-500 text-sm">No notifications</div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </header>
-
         <!-- Breadcrumbs -->
         <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
             <a href="{{ url_for('supervisor_dashboard') }}" class="hover:text-primary">Dashboard</a>
