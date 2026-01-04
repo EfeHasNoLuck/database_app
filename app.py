@@ -3,7 +3,7 @@ import mysql.connector
 from db_config import DB_CONFIG
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key_here'  # Change this for production
+app.secret_key = 'your_secret_key_here'  
 
 # Database Connection
 def get_db_connection():
@@ -83,7 +83,7 @@ def register():
     if request.method == 'POST':
         # Extract form data
         first_name = request.form.get('first_name')
-        last_name = request.form.get('last_name', '') # Optional in some uis but good to have
+        last_name = request.form.get('last_name', '') 
         email = request.form.get('email')
         password = request.form.get('password')
         role = request.form.get('role')
@@ -198,10 +198,6 @@ def student_dashboard():
                 """
                 cursor.execute(query_project, (student['student_id'],))
                 active_project = cursor.fetchone()
-                
-                # 2. Fetch Recent Activity (Mocking/Simulating from Submissions and Selection)
-                # In a real app, you might have a dedicated Activity_Log table or complex union query
-                # Here we'll just check for recent submissions and if they have a project selected
                 
                 # Selection Activity
                 cursor.execute("""
@@ -431,13 +427,7 @@ def submit_task():
                 cursor.execute("SELECT student_id FROM Student WHERE user_id = %s", (session['user_id'],))
                 student = cursor.fetchone()
                 
-                if student:
-                    # Insert submission
-                    # Note: You might want to check if submission already exists and UPDATE it instead, 
-                    # OR allow multiple submissions. Schema doesn't enforce unique task_id per student, 
-                    # but logic might imply one. I'll stick to INSERT for now, or update if exists?
-                    # Let's check first.
-                    
+                if student:                
                     cursor.execute("SELECT submission_id FROM Submission WHERE student_id = %s AND task_id = %s", 
                                    (student['student_id'], task_id))
                     existing = cursor.fetchone()
@@ -526,7 +516,6 @@ def supervisor_dashboard():
                    student_count = res['cnt'] if res else 0
 
             # 3. Pending Submissions (Same as before)
-            # Note: The query joins Supervisor table and filters by user_id so it's safe even without explicit supervisor_id above
             query_subs = """
                 SELECT Sub.*, T.title as task_title, P.title as project_title, 
                        U.first_name, U.last_name, S.student_no
@@ -997,9 +986,7 @@ def admin_dashboard():
             cursor.execute("SELECT COUNT(*) as cnt FROM Project WHERE status = 'active'")
             stats['projects'] = cursor.fetchone()['cnt']
             
-            # 2. Fetch Recent Activity (Mocking from Activity_Log if exists, or just empty for now)
-            # Check if Activity_Log table exists and has data, otherwise we use the static placeholder or empty list
-            # Based on schema.sql, Activity_Log exists.
+            # 2. Fetch Recent Activity
             cursor.execute("""
                 SELECT A.description, A.timestamp, U.first_name, U.last_name, U.role
                 FROM Activity_Log A
